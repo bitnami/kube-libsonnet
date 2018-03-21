@@ -3,7 +3,7 @@ MAINTAINER sre@bitnami.com
 
 RUN adduser --home /home/user --disabled-password --gecos User user
 
-RUN apt-get -q update && apt-get -qy install jq
+RUN apt-get -q update && apt-get -qy install jq make
 
 ADD https://storage.googleapis.com/bitnami-jenkins-tools/jsonnet-0.9.5 /usr/local/bin/jsonnet
 RUN chmod +x /usr/local/bin/jsonnet
