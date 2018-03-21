@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/bitnami-labs/kube-libsonnet.svg?branch=master)](https://travis-ci.org/bitnami-labs/kube-libsonnet)
 = kube-libsonnet
 
 This repo has been originally populated by the `lib/` folder contents
