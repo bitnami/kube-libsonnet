@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/bitnami-labs/kube-libsonnet.svg?branch=master)](https://travis-ci.org/bitnami-labs/kube-libsonnet)
-= kube-libsonnet
+# kube-libsonnet
 
 This repo has been originally populated by the `lib/` folder contents
 from `https://github.com/bitnami-labs/kube-manifests` as of Mar/2018,
@@ -15,7 +15,7 @@ a git submodule, i.e.:
     path = lib
     url = https://github.com/bitnami-labs/kube-libsonnet
 
-== Testing
+## Testing
 
 Unit and e2e-ish testing exists at tests/, needs installed `jsonnet`
 and `kubecfg` binaries, as well as a working kubernetes configured
