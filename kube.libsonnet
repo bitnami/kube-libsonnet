@@ -62,6 +62,15 @@
   // Replace all occurrences of `_` with `-`.
   hyphenate(s):: std.join("-", std.split(s, "_")),
 
+  // Convert an octal (as a string) to number,
+  parseOctal(s):: (
+    local len = std.length(s);
+    local leading = std.substr(s, 0, len - 1);
+    local last = std.parseInt(std.substr(s, len - 1, 1));
+    assert last < 8 : "found '%s' digit >= 8" % [last];
+    last + (if len > 1 then 8 * $.parseOctal(leading) else 0)
+  ),
+
   // Convert {foo: {a: b}} to [{name: foo, a: b}]
   mapToNamedList(o):: [{ name: $.hyphenate(n) } + o[n] for n in std.objectFields(o)],
 
@@ -89,12 +98,26 @@
     std.parseInt(std.substr(n, 0, n_len - convert[0])) * convert[1]
   ),
 
+  local remap(v, start, end, newstart) =
+    if v >= start && v <= end then v - start + newstart else v,
+  local remapChar(c, start, end, newstart) =
+    std.char(remap(
+      std.codepoint(c), std.codepoint(start), std.codepoint(end), std.codepoint(newstart)
+    )),
+  toLower(s):: (
+    std.join("", [remapChar(c, "A", "Z", "a") for c in std.stringChars(s)])
+  ),
+  toUpper(s):: (
+    std.join("", [remapChar(c, "a", "z", "A") for c in std.stringChars(s)])
+  ),
+
   _Object(apiVersion, kind, name):: {
+    local this = self,
     apiVersion: apiVersion,
     kind: kind,
     metadata: {
       name: name,
-      labels: { name: name },
+      labels: { name: std.join("-", std.split(this.metadata.name, ":")) },
       annotations: {},
     },
   },
@@ -123,11 +146,9 @@
     port:: self.target_pod.spec.containers[0].ports[0].containerPort,
 
     // Helpers that format host:port in various ways
-    http_url:: "http://%s.%s:%s/" % [
-      self.metadata.name,
-      self.metadata.namespace,
-      self.spec.ports[0].port,
-    ],
+    host:: "%s.%s.svc" % [self.metadata.name, self.metadata.namespace],
+    host_colon_port:: "%s:%s" % [self.host, self.spec.ports[0].port],
+    http_url:: "http://%s/" % self.host_colon_port,
     proxy_urlpath:: "/api/v1/proxy/namespaces/%s/services/%s/" % [
       self.metadata.namespace,
       self.metadata.name,
@@ -143,7 +164,7 @@
       ports: [
         {
           port: service.port,
-          targetPort: service.target_pod.spec.containers[0].ports[0].name,
+          targetPort: service.target_pod.spec.containers[0].ports[0].containerPort,
         },
       ],
       type: "ClusterIP",
@@ -188,6 +209,7 @@
   Container(name): {
     name: name,
     image: error "container image value required",
+    imagePullPolicy: if std.endsWith(self.image, ":latest") then "Always" else "IfNotPresent",
 
     envList(map):: [
       if std.type(map[x]) == "object" then { name: x, valueFrom: map[x] } else { name: x, value: map[x] }
@@ -211,16 +233,37 @@
     assert !self.tty || self.stdin : "tty=true requires stdin=true",
   },
 
+  PodDisruptionBudget(name): $._Object("policy/v1beta1", "PodDisruptionBudget", name) {
+    local this = self,
+    target_pod:: error "target_pod required",
+    spec: {
+      minAvailable: 1,
+      selector: {
+        matchLabels: this.target_pod.metadata.labels,
+      },
+    },
+  },
+
   Pod(name): $._Object("v1", "Pod", name) {
     spec: $.PodSpec,
   },
 
   PodSpec: {
     // The 'first' container is used in various defaults in k8s.
-    default_container:: std.objectFields(self.containers_)[0],
+    local container_names = std.objectFields(self.containers_),
+    default_container:: if std.length(container_names) > 1 then "default" else container_names[0],
     containers_:: {},
 
-    containers: [{ name: $.hyphenate(name) } + self.containers_[name] for name in [self.default_container] + [n for n in std.objectFields(self.containers_) if n != self.default_container]],
+    local container_names_ordered = [self.default_container] + [n for n in container_names if n != self.default_container],
+    containers: [{ name: $.hyphenate(name) } + self.containers_[name] for name in container_names_ordered if self.containers_[name] != null],
+
+    // Note initContainers are inherently ordered, and using this
+    // named object will lose that ordering.  If order matters, then
+    // manipulate `initContainers` directly (perhaps
+    // appending/prepending to `super.initContainers` to mix+match
+    // both approaches)
+    initContainers_:: {},
+    initContainers: [{ name: $.hyphenate(name) } + self.initContainers_[name] for name in std.objectFields(self.initContainers_) if self.initContainers_[name] != null],
 
     volumes_:: {},
     volumes: $.mapToNamedList(self.volumes_),
@@ -251,8 +294,8 @@
     emptyDir: {},
   },
 
-  HostPathVolume(path): {
-    hostPath: { path: path },
+  HostPathVolume(path, type=null): {
+    hostPath: { path: path, type: type },
   },
 
   GitRepoVolume(repository, revision): {
@@ -320,15 +363,14 @@
   },
 
   // subtype of EnvVarSource
-  ResourceFieldRef(key): {
+  ResourceFieldRef(key, divisor="1"): {
     resourceFieldRef: {
       resource: key,
-      divisor_:: 1,
-      divisor: std.toString(self.divisor_),
+      divisor: std.toString(divisor),
     },
   },
 
-  Deployment(name): $._Object("extensions/v1beta1", "Deployment", name) {
+  Deployment(name): $._Object("apps/v1beta2", "Deployment", name) {
     local deployment = self,
 
     spec: {
@@ -338,6 +380,10 @@
           labels: deployment.metadata.labels,
           annotations: {},
         },
+      },
+
+      selector: {
+        matchLabels: deployment.spec.template.metadata.labels,
       },
 
       strategy: {
@@ -366,9 +412,6 @@
       // NB: Upstream default is 0
       minReadySeconds: 30,
 
-      // NB: Regular k8s default is to keep all revisions
-      revisionHistoryLimit: 10,
-
       replicas: 1,
       assert self.replicas >= 1,
     },
@@ -395,11 +438,18 @@
     },
   },
 
-  StatefulSet(name): $._Object("apps/v1beta1", "StatefulSet", name) {
+  StatefulSet(name): $._Object("apps/v1beta2", "StatefulSet", name) {
     local sset = self,
 
     spec: {
       serviceName: name,
+
+      updateStrategy: {
+        type: "RollingUpdate",
+        rollingUpdate: {
+          partition: 0,
+        },
+      },
 
       template: {
         spec: $.PodSpec,
@@ -409,8 +459,19 @@
         },
       },
 
+      selector: {
+        matchLabels: sset.spec.template.metadata.labels,
+      },
+
       volumeClaimTemplates_:: {},
-      volumeClaimTemplates: [$.PersistentVolumeClaim($.hyphenate(kv[0])) + kv[1] for kv in $.objectItems(self.volumeClaimTemplates_)],
+      volumeClaimTemplates: [
+        // StatefulSet is overly fussy about "changes" (even when
+        // they're no-ops).
+        // In particular annotations={} is apparently a "change",
+        // since the comparison is ignorant of defaults.
+        std.prune($.PersistentVolumeClaim($.hyphenate(kv[0])) + { apiVersion:: null, kind:: null } + kv[1])
+        for kv in $.objectItems(self.volumeClaimTemplates_)
+      ],
 
       replicas: 1,
       assert self.replicas >= 1,
@@ -420,27 +481,64 @@
   Job(name): $._Object("batch/v1", "Job", name) {
     local job = self,
 
-    spec: $.JobSpec(job),
+    spec: $.JobSpec {
+      template+: {
+        metadata+: {
+          labels: job.metadata.labels,
+        },
+      },
+    },
   },
 
-  JobSpec(parent): {
+  // NB: kubernetes >= 1.8.x has batch/v1beta1 (olders were batch/v2alpha1)
+  CronJob(name): $._Object("batch/v1beta1", "CronJob", name) {
+    local cronjob = self,
+
+    spec: {
+      jobTemplate: {
+        spec: $.JobSpec {
+          template+: {
+            metadata+: {
+              labels: cronjob.metadata.labels,
+            },
+          },
+        },
+      },
+
+      schedule: error "Need to provide spec.schedule",
+      successfulJobsHistoryLimit: 10,
+      failedJobsHistoryLimit: 20,
+      // NB: upstream concurrencyPolicy default is "Allow"
+      concurrencyPolicy: "Forbid",
+    },
+  },
+
+  JobSpec: {
+    local this = self,
+
     template: {
       spec: $.PodSpec {
         restartPolicy: "OnFailure",
       },
-      metadata: {
-        labels: parent.metadata.labels,
-        annotations: {},
-      },
+    },
+
+    selector: {
+      matchLabels: this.template.metadata.labels,
     },
 
     completions: 1,
     parallelism: 1,
   },
 
-  DaemonSet(name): $._Object("extensions/v1beta1", "DaemonSet", name) {
+  DaemonSet(name): $._Object("apps/v1beta2", "DaemonSet", name) {
     local ds = self,
     spec: {
+      updateStrategy: {
+        type: "RollingUpdate",
+        rollingUpdate: {
+          maxUnavailable: 1,
+        },
+      },
       template: {
         metadata: {
           labels: ds.metadata.labels,
@@ -448,11 +546,23 @@
         },
         spec: $.PodSpec,
       },
+
+      selector: {
+        matchLabels: ds.spec.template.metadata.labels,
+      },
     },
   },
 
   Ingress(name): $._Object("extensions/v1beta1", "Ingress", name) {
     spec: {},
+
+    local rel_paths = [
+      p.path
+      for r in self.spec.rules
+      for p in r.http.paths
+      if !std.startsWith(p.path, "/")
+    ],
+    assert std.length(rel_paths) == 0 : "paths must be absolute: " + rel_paths,
   },
 
   ThirdPartyResource(name): $._Object("extensions/v1beta1", "ThirdPartyResource", name) {
@@ -460,8 +570,24 @@
     versions: [{ name: n } for n in self.versions_],
   },
 
-  CustomResourceDefinition(name): $._Object("apiextensions.k8s.io/v1beta1", "CustomResourceDefinition", name) {
-    spec: {},
+  CustomResourceDefinition(group, version, kind): {
+    local this = self,
+    apiVersion: "apiextensions.k8s.io/v1beta1",
+    kind: "CustomResourceDefinition",
+    metadata+: {
+      name: this.spec.names.plural + "." + this.spec.group,
+    },
+    spec: {
+      scope: "Namespaced",
+      group: group,
+      version: version,
+      names: {
+        kind: kind,
+        singular: $.toLower(self.kind),
+        plural: self.singular + "s",
+        listKind: self.kind + "List",
+      },
+    },
   },
 
   ServiceAccount(name): $._Object("v1", "ServiceAccount", name) {
@@ -523,23 +649,6 @@
     assert std.base64Decode(self.spec.data) != "",
   },
 
-  // NB: kubernetes >= 1.8.x has batch/v1beta1 (olders were batch/v2alpha1)
-  CronJob(name): $._Object("batch/v1beta1", "CronJob", name) {
-    local cronjob = self,
-
-    spec: {
-      jobTemplate: {
-        spec: $.JobSpec(cronjob),
-      },
-
-      schedule: error "Need to provide spec.schedule",
-      successfulJobsHistoryLimit: 10,
-      failedJobsHistoryLimit: 20,
-      // NB: upstream concurrencyPolicy default is "Allow"
-      concurrencyPolicy: "Forbid",
-    },
-  },
-
   // NB: helper method to access several Kubernetes objects podRef,
   // used below to extract its labels
   podRef(obj):: ({
@@ -580,7 +689,6 @@
   NetworkPolicy(name): $._Object("networking.k8s.io/v1", "NetworkPolicy", name) {
     local networkpolicy = self,
     spec: {
-      podSelector: {},
       policyTypes: std.prune([
         if networkpolicy.spec.ingress != [] then "Ingress" else null,
         if networkpolicy.spec.egress != [] then "Egress" else null,

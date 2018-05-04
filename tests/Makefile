@@ -49,7 +49,10 @@ lint-help:
 	@echo
 
 fix-lint:
-	jsonnet fmt -i $(JSONNET_FMT) -- $(ALL_JSONNET) $(LIB_JSONNET)
+	@for f in $(ALL_JSONNET) $(LIB_JSONNET); do \
+	  echo jsonnet fmt -i $(JSONNET_FMT) -- $$f; \
+	  jsonnet fmt -i $(JSONNET_FMT) -- $$f; \
+	done
 
 gen-golden: $(PHONY_GOLDEN)
 
