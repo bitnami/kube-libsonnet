@@ -25,8 +25,11 @@ std.assertEqual(kube.objectItems({ a: 1, b: 2 }), [["a", 1], ["b", 2]]) &&
 std.assertEqual(kube.hyphenate("foo_bar_baz"), ("foo-bar-baz")) &&
 std.assertEqual(kube.mapToNamedList({ foo: { a: "b" } }), [{ name: "foo", a: "b" }]) &&
 std.assertEqual(kube.filterMapByFields({ a: 1, b: 2, c: 3 }, ["a", "c", "d"]), { a: 1, c: 3 }) &&
+std.assertEqual(kube.parseOctal("755"), 493) &&
 std.assertEqual(kube.siToNum("42G"), 42 * 1e9) &&
 std.assertEqual(kube.siToNum("42Gi"), 42 * std.pow(2, 30)) &&
+std.assertEqual(kube.toUpper("ForTy 2"), "FORTY 2") &&
+std.assertEqual(kube.toLower("ForTy 2"), "forty 2") &&
 std.assertEqual(an_obj, {
   apiVersion: "v1",
   kind: "Gentle",

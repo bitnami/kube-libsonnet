@@ -17,8 +17,20 @@ test: unittests lint parse validate diff
 unittests:
 	jsonnet $(UNITTEST_JSONNET)
 
-lint: lint-help
-	jsonnet fmt --test $(JSONNET_FMT) -- $(ALL_JSONNET) $(LIB_JSONNET)
+lint:
+	@set -e; errs=0; \
+        for f in $(ALL_JSONNET) $(LIB_JSONNET); do \
+	  if ! jsonnet fmt --test $(JSONNET_FMT) -- $$f; then \
+	    echo "FAILED lint: $$f" >&2; \
+	    errs=$$(( $$errs + 1 )); \
+	  fi; \
+	done; \
+	if [ $$errs -gt 0 ]; then \
+	  echo "NOTE: if the 'lint' target fails, run:"; \
+	  echo "      $(MAKE) fix-lint lint"; \
+	  exit 1; \
+	fi
+
 
 parse: $(PHONY_PARSE)
 
@@ -43,14 +55,13 @@ diff-help:
 	@echo "      $(MAKE) gen-golden diff"
 	@echo
 
-lint-help:
-	@echo "NOTE: if the 'lint' target fails, run:"
-	@echo "      $(MAKE) fix-lint lint"
-	@echo
-
 fix-lint:
-	jsonnet fmt -i $(JSONNET_FMT) -- $(ALL_JSONNET) $(LIB_JSONNET)
+	@set -e; \
+	for f in $(ALL_JSONNET) $(LIB_JSONNET); do \
+	  echo jsonnet fmt -i $(JSONNET_FMT) -- $$f; \
+	  jsonnet fmt -i $(JSONNET_FMT) -- $$f; \
+	done
 
 gen-golden: $(PHONY_GOLDEN)
 
-.PHONY: unittests lint parse validate diff %.parse %.diff golden/%.json diff-help lint-help fix-lint gen-golden
+.PHONY: unittests lint parse validate diff %.parse %.diff golden/%.json diff-help fix-lint gen-golden
