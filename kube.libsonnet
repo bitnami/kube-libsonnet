@@ -294,7 +294,7 @@
     emptyDir: {},
   },
 
-  HostPathVolume(path, type=null): {
+  HostPathVolume(path, type=""): {
     hostPath: { path: path, type: type },
   },
 
