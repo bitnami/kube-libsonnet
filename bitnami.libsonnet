@@ -55,33 +55,31 @@ local perCloudSvcSpec(cloud) = (
     paths:: [{ path: "/", backend: ing.target_svc.name_port }],
     secretName:: "%s-cert" % [ing.metadata.name],
     // cert_provider can either be:
-    // - "kcm": uses route53 for ACME dns-01 challenge
-    // - "lego": requires public ingress, uses http for ACME http challenge
-    cert_provider:: "kcm",
+    // - "internal": uses route53 for ACME dns-01 challenge
+    // - "external": requires public ingress, uses http01 for ACME http challenge
+    cert_provider:: "internal",
 
-    kcm_metadata:: {
+    cert_internal_metadata:: {
       annotations+: {
-        "stable.k8s.psg.io/kcm.provider": "route53",
-        "stable.k8s.psg.io/kcm.email": "sre@bitnami.com",
-      },
-      labels+: {
-        "stable.k8s.psg.io/kcm.class": "default",
+        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-dns",
+        "certmanager.k8s.io/acme-challenge-type": "dns01",
+        "certmanager.k8s.io/acme-dns01-provider": "default",
       },
     },
-    kube_lego_metadata:: {
+    cert_external_metadata:: {
       annotations+: {
-        "kubernetes.io/tls-acme": "true",
+        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-http"
       },
     },
 
-    metadata+: if ing.cert_provider == "kcm" then ing.kcm_metadata else ing.kube_lego_metadata,
+    metadata+: if ing.cert_provider == "internal" then ing.cert_internal_metadata else ing.cert_external_metadata,
     spec+: {
       tls: [
         {
           hosts: std.set([r.host for r in ing.spec.rules]),
           secretName: ing.secretName,
 
-          assert std.length(self.hosts) <= 1 : "kube-cert-manager only supports one host per secret - make a separate Ingress resource",
+          assert std.length(self.hosts) <= 1 : "cert-manager only supports one host per secret - make a separate Ingress resource",
         },
       ],
 
