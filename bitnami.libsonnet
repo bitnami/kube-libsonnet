@@ -68,7 +68,7 @@ local perCloudSvcSpec(cloud) = (
     },
     cert_external_metadata:: {
       annotations+: {
-        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-http"
+        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-http",
       },
     },
 
