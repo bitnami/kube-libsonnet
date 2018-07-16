@@ -249,12 +249,12 @@
          "kind": "Ingress",
          "metadata": {
             "annotations": {
-               "stable.k8s.psg.io/kcm.email": "sre@bitnami.com",
-               "stable.k8s.psg.io/kcm.provider": "route53"
+               "certmanager.k8s.io/acme-challenge-type": "dns01",
+               "certmanager.k8s.io/acme-dns01-provider": "default",
+               "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-dns"
             },
             "labels": {
-               "name": "foo-ingress",
-               "stable.k8s.psg.io/kcm.class": "default"
+               "name": "foo-ingress"
             },
             "name": "foo-ingress",
             "namespace": "foons"
