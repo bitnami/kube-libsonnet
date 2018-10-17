@@ -12,13 +12,6 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-// Example to demonstrate kubecfg using kube-libsonnet
-// This should not necessarily be considered a model jsonnet example
-// to build upon.
-
-// Based on WordPress chart:
-// https://github.com/helm/charts/tree/master/stable/wordpress
-//
 // ```
 // kubecfg update wordpress.jsonnet
 //
@@ -26,9 +19,9 @@
 // ```
 
 local kube = import "lib/kube.libsonnet";
-local frontend = import "frontend.jsonnet";
-local backend = import "backend.jsonnet";
+local fe = import "frontend.jsonnet";
+local be = import "backend.jsonnet";
 
 kube.List() {
-  items_+: frontend + backend,
+  items_+: fe.frontend + { secret: be.backend.secret } + be.backend.master + be.backend.slave,
 }
