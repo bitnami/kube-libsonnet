@@ -23,5 +23,25 @@ local fe = import "frontend.jsonnet";
 local be = import "backend.jsonnet";
 
 kube.List() {
-  items_+: fe.frontend + { secret: be.backend.secret } + be.backend.master + be.backend.slave,
+  items_+: {
+    frontend_pvc: fe.frontend.pvc,
+  } + {
+    frontend_configmap: fe.frontend.configmap,
+  } + {
+    frontend_secret: fe.frontend.secret,
+  } + {
+    frontend_deployment: fe.frontend.deployment,
+  } + {
+    frontend_service: fe.frontend.service,
+  } + {
+    backend_secret: be.backend.secret,
+  } + {
+    backend_master_statefulset: be.backend.master.statefulset,
+  } + {
+    backend_master_service: be.backend.master.service,
+  } + {
+    backend_slave_statefulset: be.backend.slave.statefulset,
+  } + {
+    backend_slave_service: be.backend.slave.service,
+  },
 }

@@ -116,7 +116,7 @@ local labels = {
 
     slave: {
       local slaveLabels = labels + {
-        component: "master",
+        component: "slave",
       },
       statefulset: kube.StatefulSet("mariadb-slave") {
         metadata+: {
