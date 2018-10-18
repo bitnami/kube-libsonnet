@@ -22,26 +22,15 @@ local kube = import "lib/kube.libsonnet";
 local fe = import "frontend.jsonnet";
 local be = import "backend.jsonnet";
 
+local findObjs(top) = std.flattenArrays([
+  if (std.objectHas(v, "apiVersion") && std.objectHas(v, "kind")) then [v] else findObjs(v)
+  for v in kube.objectValues(top)
+]);
+
 kube.List() {
   items_+: {
-    frontend_pvc: fe.frontend.pvc,
-  } + {
-    frontend_configmap: fe.frontend.configmap,
-  } + {
-    frontend_secret: fe.frontend.secret,
-  } + {
-    frontend_deployment: fe.frontend.deployment,
-  } + {
-    frontend_service: fe.frontend.service,
-  } + {
-    backend_secret: be.backend.secret,
-  } + {
-    backend_master_statefulset: be.backend.master.statefulset,
-  } + {
-    backend_master_service: be.backend.master.service,
-  } + {
-    backend_slave_statefulset: be.backend.slave.statefulset,
-  } + {
-    backend_slave_service: be.backend.slave.service,
+    frontend: fe,
+    backend: be,
   },
+  items: findObjs(self.items_),
 }
