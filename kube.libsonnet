@@ -216,11 +216,27 @@
       for x in std.objectFields(map)
     ],
 
+    argFormat(kv, f):: (
+      if f.split then
+        [
+          "%s%s" % [f.prefix, kv[0]],
+          "%s" % [kv[1]],
+        ]
+      else
+        [
+          "%s%s=%s" % [f.prefix, kv[0], kv[1]],
+        ]
+    ),
+
     env_:: {},
     env: self.envList(self.env_),
 
+    args_format:: { prefix: "--", split: false },
     args_:: {},
-    args: ["--%s=%s" % kv for kv in $.objectItems(self.args_)],
+    args: std.flattenArrays([
+      self.argFormat(kv, self.args_format)
+      for kv in $.objectItems(self.args_)
+    ]),
 
     ports_:: {},
     ports: $.mapToNamedList(self.ports_),
