@@ -1,4 +1,4 @@
-// Generic library of Kubernetes objects
+// Generic library of Kubernetes objects (https://github.com/bitnami-labs/kube-libsonnet)
 //
 // Objects in this file follow the regular Kubernetes API object
 // schema with two exceptions:
