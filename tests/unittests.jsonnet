@@ -50,5 +50,5 @@ std.assertEqual(
 ) &&
 std.assertEqual(
   kube.podLabelsSelector(a_deploy),
-  { podSelector: { matchLabels: { name: "foo", foo: "bar", bar: "qxx" } } }
+  { podSelector: { matchLabels: { app: "foo" } } }
 )

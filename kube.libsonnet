@@ -122,6 +122,12 @@
     },
   },
 
+  _AppObject(apiVersion, kind, name):: $._Object(apiVersion, kind, name) {
+    metadata+: {
+      labels+: { app: name },
+    },
+  },
+
   List(): {
     apiVersion: "v1",
     kind: "List",
@@ -160,7 +166,7 @@
     },
 
     spec: {
-      selector: service.target_pod.metadata.labels,
+      selector: { app: service.target_pod.metadata.labels.app },
       ports: [
         {
           port: service.port,
@@ -239,12 +245,12 @@
     spec: {
       minAvailable: 1,
       selector: {
-        matchLabels: this.target_pod.metadata.labels,
+        matchLabels: { app: this.target_pod.metadata.labels.app },
       },
     },
   },
 
-  Pod(name): $._Object("v1", "Pod", name) {
+  Pod(name): $._AppObject("v1", "Pod", name) {
     spec: $.PodSpec,
   },
 
@@ -370,7 +376,7 @@
     },
   },
 
-  Deployment(name): $._Object("apps/v1beta2", "Deployment", name) {
+  Deployment(name): $._AppObject("apps/v1beta2", "Deployment", name) {
     local deployment = self,
 
     spec: {
@@ -383,7 +389,7 @@
       },
 
       selector: {
-        matchLabels: deployment.spec.template.metadata.labels,
+        matchLabels: { app: deployment.spec.template.metadata.labels.app },
       },
 
       strategy: {
@@ -438,7 +444,7 @@
     },
   },
 
-  StatefulSet(name): $._Object("apps/v1beta2", "StatefulSet", name) {
+  StatefulSet(name): $._AppObject("apps/v1beta2", "StatefulSet", name) {
     local sset = self,
 
     spec: {
@@ -460,7 +466,7 @@
       },
 
       selector: {
-        matchLabels: sset.spec.template.metadata.labels,
+        matchLabels: { app: sset.spec.template.metadata.labels.app },
       },
 
       volumeClaimTemplates_:: {},
@@ -478,7 +484,7 @@
     },
   },
 
-  Job(name): $._Object("batch/v1", "Job", name) {
+  Job(name): $._AppObject("batch/v1", "Job", name) {
     local job = self,
 
     spec: $.JobSpec {
@@ -491,7 +497,7 @@
   },
 
   // NB: kubernetes >= 1.8.x has batch/v1beta1 (olders were batch/v2alpha1)
-  CronJob(name): $._Object("batch/v1beta1", "CronJob", name) {
+  CronJob(name): $._AppObject("batch/v1beta1", "CronJob", name) {
     local cronjob = self,
 
     spec: {
@@ -523,14 +529,14 @@
     },
 
     selector: {
-      matchLabels: this.template.metadata.labels,
+      matchLabels: { app: this.template.metadata.labels.app },
     },
 
     completions: 1,
     parallelism: 1,
   },
 
-  DaemonSet(name): $._Object("apps/v1beta2", "DaemonSet", name) {
+  DaemonSet(name): $._AppObject("apps/v1beta2", "DaemonSet", name) {
     local ds = self,
     spec: {
       updateStrategy: {
@@ -548,7 +554,7 @@
       },
 
       selector: {
-        matchLabels: ds.spec.template.metadata.labels,
+        matchLabels: { app: ds.spec.template.metadata.labels.app },
       },
     },
   },
@@ -666,7 +672,7 @@
     podSelector: std.prune({
       matchLabels:
         if filter != null then $.filterMapByFields($.podRef(obj).metadata.labels, filter)
-        else $.podRef(obj).metadata.labels,
+        else { app: $.podRef(obj).metadata.labels.app },
     }),
   },
 

@@ -22,6 +22,7 @@
          "metadata": {
             "annotations": { },
             "labels": {
+               "app": "foo-cronjob",
                "name": "foo-cronjob"
             },
             "name": "foo-cronjob",
@@ -36,12 +37,13 @@
                   "parallelism": 1,
                   "selector": {
                      "matchLabels": {
-                        "name": "foo-cronjob"
+                        "app": "foo-cronjob"
                      }
                   },
                   "template": {
                      "metadata": {
                         "labels": {
+                           "app": "foo-cronjob",
                            "name": "foo-cronjob"
                         }
                      },
@@ -78,6 +80,7 @@
          "metadata": {
             "annotations": { },
             "labels": {
+               "app": "foo-deploy",
                "name": "foo-deploy"
             },
             "name": "foo-deploy",
@@ -88,7 +91,7 @@
             "replicas": 1,
             "selector": {
                "matchLabels": {
-                  "name": "foo-deploy"
+                  "app": "foo-deploy"
                }
             },
             "strategy": {
@@ -102,6 +105,7 @@
                "metadata": {
                   "annotations": { },
                   "labels": {
+                     "app": "foo-deploy",
                      "name": "foo-deploy"
                   }
                },
@@ -166,6 +170,7 @@
          "metadata": {
             "annotations": { },
             "labels": {
+               "app": "foo-ds",
                "name": "foo-ds"
             },
             "name": "foo-ds",
@@ -174,13 +179,14 @@
          "spec": {
             "selector": {
                "matchLabels": {
-                  "name": "foo-ds"
+                  "app": "foo-ds"
                }
             },
             "template": {
                "metadata": {
                   "annotations": { },
                   "labels": {
+                     "app": "foo-ds",
                      "name": "foo-ds"
                   }
                },
@@ -292,6 +298,7 @@
          "metadata": {
             "annotations": { },
             "labels": {
+               "app": "foo-job",
                "name": "foo-job"
             },
             "name": "foo-job",
@@ -302,12 +309,13 @@
             "parallelism": 1,
             "selector": {
                "matchLabels": {
-                  "name": "foo-job"
+                  "app": "foo-job"
                }
             },
             "template": {
                "metadata": {
                   "labels": {
+                     "app": "foo-job",
                      "name": "foo-job"
                   }
                },
@@ -390,7 +398,7 @@
                      {
                         "podSelector": {
                            "matchLabels": {
-                              "name": "foo-sts"
+                              "app": "foo-sts"
                            }
                         }
                      }
@@ -403,14 +411,14 @@
                      {
                         "podSelector": {
                            "matchLabels": {
-                              "name": "foo-job"
+                              "app": "foo-job"
                            }
                         }
                      },
                      {
                         "podSelector": {
                            "matchLabels": {
-                              "name": "foo-cronjob"
+                              "app": "foo-cronjob"
                            }
                         }
                      },
@@ -436,7 +444,7 @@
             ],
             "podSelector": {
                "matchLabels": {
-                  "name": "foo-deploy"
+                  "app": "foo-deploy"
                }
             },
             "policyTypes": [
@@ -451,6 +459,7 @@
          "metadata": {
             "annotations": { },
             "labels": {
+               "app": "foo-pod",
                "name": "foo-pod"
             },
             "name": "foo-pod",
@@ -618,7 +627,7 @@
                }
             ],
             "selector": {
-               "name": "foo-deploy"
+               "app": "foo-deploy"
             },
             "type": "ClusterIP"
          }
@@ -629,6 +638,7 @@
          "metadata": {
             "annotations": { },
             "labels": {
+               "app": "foo-sts",
                "name": "foo-sts"
             },
             "name": "foo-sts",
@@ -638,7 +648,7 @@
             "replicas": 1,
             "selector": {
                "matchLabels": {
-                  "name": "foo-sts"
+                  "app": "foo-sts"
                }
             },
             "serviceName": "foo-sts",
@@ -646,6 +656,7 @@
                "metadata": {
                   "annotations": { },
                   "labels": {
+                     "app": "foo-sts",
                      "name": "foo-sts"
                   }
                },
