@@ -372,7 +372,6 @@
 
   Deployment(name): $._Object("apps/v1beta2", "Deployment", name) {
     local deployment = self,
-    hide_replicas:: false,
 
     spec: {
       template: {
@@ -413,8 +412,7 @@
       // NB: Upstream default is 0
       minReadySeconds: 30,
 
-      [ if ! deployment.hide_replicas then "replicas" ]: 1,
-      assert if std.objectHas(self, "replicas") then self.replicas >= 0 else true,
+      replicas: 1,
     },
   },
 
