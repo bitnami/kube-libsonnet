@@ -521,10 +521,6 @@
       },
     },
 
-    selector: {
-      matchLabels: this.template.metadata.labels,
-    },
-
     completions: 1,
     parallelism: 1,
   },

@@ -34,11 +34,6 @@
                "spec": {
                   "completions": 1,
                   "parallelism": 1,
-                  "selector": {
-                     "matchLabels": {
-                        "name": "foo-cronjob"
-                     }
-                  },
                   "template": {
                      "metadata": {
                         "labels": {
@@ -300,11 +295,6 @@
          "spec": {
             "completions": 1,
             "parallelism": 1,
-            "selector": {
-               "matchLabels": {
-                  "name": "foo-job"
-               }
-            },
             "template": {
                "metadata": {
                   "labels": {
