@@ -413,7 +413,6 @@
       minReadySeconds: 30,
 
       replicas: 1,
-      assert self.replicas >= 1,
     },
   },
 
