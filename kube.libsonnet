@@ -53,6 +53,13 @@
 // (client-side, and gives better line information).
 
 {
+  // resource contructors will use kinds/versions/fields compatible at least with version:
+  minKubeVersion: {
+    major: 1,
+    minor: 9,
+    version: "%s.%s" % [self.major, self.minor],
+  },
+
   // Returns array of values from given object.  Does not include hidden fields.
   objectValues(o):: [o[field] for field in std.objectFields(o)],
 
@@ -370,7 +377,7 @@
     },
   },
 
-  Deployment(name): $._Object("apps/v1beta2", "Deployment", name) {
+  Deployment(name): $._Object("apps/v1", "Deployment", name) {
     local deployment = self,
 
     spec: {
@@ -437,7 +444,7 @@
     },
   },
 
-  StatefulSet(name): $._Object("apps/v1beta2", "StatefulSet", name) {
+  StatefulSet(name): $._Object("apps/v1", "StatefulSet", name) {
     local sset = self,
 
     spec: {
@@ -525,7 +532,7 @@
     parallelism: 1,
   },
 
-  DaemonSet(name): $._Object("apps/v1beta2", "DaemonSet", name) {
+  DaemonSet(name): $._Object("apps/v1", "DaemonSet", name) {
     local ds = self,
     spec: {
       updateStrategy: {
