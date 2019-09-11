@@ -203,6 +203,7 @@
         },
       },
       accessModes: ["ReadWriteOnce"],
+      [if pvc.storageClass != null then "storageClassName"]: pvc.storageClass,
     },
   },
 
