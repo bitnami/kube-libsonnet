@@ -420,6 +420,9 @@
       // NB: Upstream default is 0
       minReadySeconds: 30,
 
+      // NB: Regular k8s default is to keep all revisions
+      revisionHistoryLimit: 10,
+
       replicas: 1,
     },
   },
@@ -556,7 +559,7 @@
     },
   },
 
-  Ingress(name): $._Object("extensions/v1beta1", "Ingress", name) {
+  Ingress(name): $._Object("networking.k8s.io/v1beta1", "Ingress", name) {
     spec: {},
 
     local rel_paths = [
@@ -700,6 +703,7 @@
       ingress_:: {},
       egress: $.objectValues(self.egress_),
       egress_:: {},
+      podSelector: {},
     },
   },
 }
