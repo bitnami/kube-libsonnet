@@ -1,5 +1,5 @@
 // Generic stuff is in kube.libsonnet - this file contains
-// additional AWS or Bitnami -specific conventions.
+// bitnami-specific conventions.
 
 local kube = import "kube.libsonnet";
 
@@ -92,8 +92,6 @@ local perCloudSvcSpec(cloud) = (
         {
           hosts: std.set([r.host for r in ing.spec.rules]),
           secretName: ing.secretName,
-
-          assert std.length(self.hosts) <= 1 : "kube-cert-manager only supports one host per secret - make a separate Ingress resource",
         },
       ],
 
