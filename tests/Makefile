@@ -19,7 +19,7 @@ tests: docker-compose-tests
 
 docker-compose-tests:
 	install -d $(TMP_RANCHER) $(TMP_RANCHER)/etc && touch $(TMP_RANCHER)/etc/k3s.yaml
-	docker-compose -p $(PROJECT) up -d
+	USERID=$$(id -u) docker-compose -p $(PROJECT) up -d
 	rc=$$(timeout 60s docker wait $(DOCKER_E2E)) || rc=255 ;\
 	   test $$rc -ne 0 && docker logs k3s-api;\
 	   docker logs $(DOCKER_E2E);\

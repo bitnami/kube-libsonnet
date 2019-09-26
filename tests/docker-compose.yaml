@@ -10,7 +10,7 @@ services:
       - ./tmp-rancher/etc:/etc/rancher/k3s
     expose:
       - 6443
-    user: "1000"
+    user: "${USERID}"
     environment:
       - USER=nobody
       - HOME=/
@@ -27,7 +27,7 @@ services:
     working_dir: /work
     environment:
       - HOME=/
-    user: "1000"
+    user: "${USERID}"
     command:
       - bash
       - -c
