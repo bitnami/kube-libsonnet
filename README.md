@@ -18,12 +18,12 @@ a git submodule, i.e.:
 ## Testing
 
 Unit and e2e-ish testing at tests/, needs usable `docker-compose`
-at node, will run a `k3s` "dummy" container to serve Kube API, enough
-to for `kubecfg validate` against it:
+setup at node, will run a `k3s` "dummy" container to serve Kube API,
+"enough" to run `kubecfg validate` against it:
 
     make tests
 
 If you don't want that full kube-api stack (will then use your "local"
 kubernetes configured environment), you can run:
 
-    make -C tests test-srcs test-kube
+    make -C tests local-tests kube-validate
