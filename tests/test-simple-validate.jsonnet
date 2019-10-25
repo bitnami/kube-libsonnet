@@ -198,6 +198,18 @@ local stack = {
       },
     },
   },
+  // NB: these VPAs need the VPA CRD added to the cluster, for local k3s testing
+  // we add it via the `init-kube` Makefile target using `init-kube.jsonnet`
+  vpa: kube.VerticalPodAutoscaler($.name + "-vpa") {
+    spec+: {
+      targetRef: {
+        apiVersion: "apps/v1",
+        kind: "Deployment",
+        name: "foo-deploy",
+      },
+    },
+  },
+  deploy_vpa: kube.createVPAFor($.deploy),
 };
 
 kube.List() {

@@ -17,7 +17,7 @@ PROJECT=kubelibsonnet
 
 tests: docker-compose-tests
 
-docker-compose-tests:
+docker-compose-tests: req-docker req-docker-compose
 	install -d $(TMP_RANCHER) $(TMP_RANCHER)/etc && touch $(TMP_RANCHER)/etc/k3s.yaml
 	USERID=$$(id -u) docker-compose -p $(PROJECT) up -d
 	rc=$$(timeout 60s docker wait $(DOCKER_E2E)) || rc=255 ;\
@@ -27,15 +27,14 @@ docker-compose-tests:
 	   exit $$rc
 	rm -rf ./$(TMP_RANCHER)
 
-test-srcs: unittests lint parse diff
-test-kube: validate
+local-tests: unittests lint parse diff
 
 # NB: unittest jsonnet files are also covered by parse and diff targets,
 #     called out here for convenience
-unittests:
+unittests: req-jsonnet
 	jsonnet $(UNITTEST_JSONNET)
 
-lint:
+lint: req-jsonnetfmt
 	@set -e; errs=0; \
         for f in $(ALL_JSONNET) $(LIB_JSONNET); do \
 	  if ! jsonnetfmt --test $(JSONNET_FMT) -- $$f; then \
@@ -49,11 +48,16 @@ lint:
 	  exit 1; \
 	fi
 
-parse: $(PHONY_PARSE)
+parse: req-jsonnet $(PHONY_PARSE)
 
 diff: diff-help $(PHONY_DIFF)
 
-validate:
+# Used to initialize docker'ized KubeAPI via k3s
+kube-init: req-kubectl req-kubecfg
+	kubectl version --short | grep k3s # void falsely initializing live clusters 
+	kubecfg update init-kube.jsonnet
+
+kube-validate: req-kubectl req-kubecfg
 	timeout 10 kubectl api-versions > /dev/null \
 	|| { echo "WARNING: no usable runtime kube context, skipping."; exit 0 ;} \
 	&& kubectl version --short && kubecfg version && kubecfg validate --ignore-unknown=false $(ALL_K8S_VALIDATE_JSONNET)
@@ -72,12 +76,15 @@ diff-help:
 	@echo "      $(MAKE) gen-golden diff"
 	@echo
 
-fix-lint:
+fix-lint: req-jsonnet
 	@set -e; \
 	for f in $(ALL_JSONNET) $(LIB_JSONNET); do \
 	  echo jsonnetfmt -i $(JSONNET_FMT) -- $$f; \
 	  jsonnetfmt -i $(JSONNET_FMT) -- $$f; \
 	done
+
+req-%:
+	@which $(*) >/dev/null && exit 0; echo "ERROR: '$(*)' is required in PATH"; exit 1
 
 gen-golden: $(PHONY_GOLDEN)
 
