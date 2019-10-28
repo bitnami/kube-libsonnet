@@ -14,6 +14,10 @@ services:
     environment:
       - USER=nobody
       - HOME=/
+    tmpfs:
+      - /var/run
+      - /run
+      - /tmp
   e2e-test:
     build: .
     container_name: e2e-test
@@ -29,21 +33,4 @@ services:
       - HOME=/
     user: "${USERID}"
     command:
-      - bash
-      - -c
-      - |
-        echo "INFO: Starting tests: unit, lint ..."
-        make -C tests test-srcs
-        export KUBECONFIG=/tmp/kubeconfig
-        echo "INFO: Waiting for kube-api to be available ..."
-        until kubectl get nodes; do
-          sleep 1
-          # Found that k3s releases create k3s.yaml under diff paths,
-          # redirecting stderr just to avoid red-herrings errors
-          sed -e s/localhost/kube-api/ -e s/127.0.0.1/kube-api/ \
-            /tmp/rancher/k3s.yaml /tmp/rancher/etc/k3s.yaml \
-            > $$KUBECONFIG 2>/dev/null
-        done
-        echo "INFO: Starting tests: validate ..."
-        set -x
-        make -C tests test-kube
+      - tests/k3s-e2e-test.sh
