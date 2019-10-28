@@ -708,29 +708,28 @@
   },
 
   VerticalPodAutoscaler(name):: $._Object("autoscaling.k8s.io/v1beta2", "VerticalPodAutoscaler", name) {
+    local vpa = self,
+
+    target:: error "target required",
+
     spec: {
-      local spec = self,
-      targetRef_:: null,
-      targetRef: if spec.targetRef_ != null then {
-        apiVersion: spec.targetRef_.apiVersion,
-        kind: spec.targetRef_.kind,
-        name: spec.targetRef_.metadata.name,
-      } else {},
+      targetRef: $.CrossVersionObjectReference(vpa.target),
+
       updatePolicy: {
         updateMode: "Auto",
       },
-      assert self.targetRef != {} : "VerticalPodAutoscaler: must set a targetRef",
     },
   },
   // Helper function to ease VPA creation as e.g.:
   // foo_vpa:: kube.createVPAFor($.foo_deploy)
   createVPAFor(target, mode="Auto"):: $.VerticalPodAutoscaler(target.metadata.name) {
+    target:: target,
+
     metadata+: {
       namespace: target.metadata.namespace,
       labels+: target.metadata.labels,
     },
     spec+: {
-      targetRef_:: target,
       updatePolicy+: {
         updateMode: mode,
       },
