@@ -71,6 +71,7 @@ local perCloudSvcSpec(cloud) = (
     },
     cm_dns_metadata:: {
       annotations+: {
+        "cert-manager.io/cluster-issuer": "letsencrypt-prod-dns",
         "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-dns",
         "certmanager.k8s.io/acme-challenge-type": "dns01",
         "certmanager.k8s.io/acme-dns01-provider": "default",
@@ -78,7 +79,8 @@ local perCloudSvcSpec(cloud) = (
     },
     cm_http_metadata:: {
       annotations+: {
-        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-http",
+        "cert-manager.io/cluster-issuer": "letsencrypt-prod-dns",
+        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-dns",
       },
     },
 
