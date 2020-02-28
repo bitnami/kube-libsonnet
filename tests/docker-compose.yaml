@@ -5,9 +5,9 @@ services:
     command: server --disable-agent
     container_name: k3s-api
     volumes:
-      - ./tmp-rancher:/.kube
-      - ./tmp-rancher:/.rancher
-      - ./tmp-rancher/etc:/etc/rancher/k3s
+      - ./tmp-rancher/root:/.kube
+      - ./tmp-rancher/root:/.rancher
+      - ./tmp-rancher/root/etc:/etc/rancher/k3s
     expose:
       - 6443
     user: "${USERID}"
@@ -26,7 +26,7 @@ services:
     depends_on:
       - kube-api
     volumes:
-      - ./tmp-rancher:/tmp/rancher
+      - ./tmp-rancher/root:/tmp/rancher
       - ..:/work
     working_dir: /work
     environment:

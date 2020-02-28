@@ -2,8 +2,8 @@ FROM bitnami/minideb:buster
 MAINTAINER sre@bitnami.com
 
 ARG jsonnet_version=0.14.0
-ARG kubectl_version=v1.13.0
-ARG kubecfg_version=v0.12.0
+ARG kubectl_version=v1.17.0
+ARG kubecfg_version=v0.14.0
 
 RUN install_packages jq make curl ca-certificates
 RUN adduser --home /home/user --disabled-password --gecos User user

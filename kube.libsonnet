@@ -559,7 +559,7 @@
     },
   },
 
-  Ingress(name): $._Object("extensions/v1beta1", "Ingress", name) {
+  Ingress(name): $._Object("networking.k8s.io/v1beta1", "Ingress", name) {
     spec: {},
 
     local rel_paths = [
