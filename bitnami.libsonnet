@@ -79,8 +79,8 @@ local perCloudSvcSpec(cloud) = (
     },
     cm_http_metadata:: {
       annotations+: {
-        "cert-manager.io/cluster-issuer": "letsencrypt-prod-dns",
-        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-dns",
+        "cert-manager.io/cluster-issuer": "letsencrypt-prod-http",
+        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-http",
       },
     },
 
