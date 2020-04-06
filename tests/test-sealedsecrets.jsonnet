@@ -2,7 +2,7 @@ local kube = import "../kube.libsonnet";
 local stack = {
   sealedsecret: kube.SealedSecret("foo") {
     spec+: {
-      data: "dGVzdAo=",
+      encryptedData: std.parseJson(importstr "test-sealedsecrets.json"),
     },
   },
 };

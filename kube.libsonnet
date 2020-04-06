@@ -641,18 +641,14 @@
     kind: "ClusterRoleBinding",
   },
 
-  // NB: datalines_ can be used to reduce boilerplate importstr as:
-  // kubectl get secret ... -ojson mysec | kubeseal | jq -r .spec.data > mysec-ssdata.txt
-  //   datalines_: importstr "mysec-ssddata.txt"
+  // NB: encryptedData can be imported into a SealedSecret as follows:
+  // kubectl get secret ... -ojson mysec | kubeseal | jq -r .spec.encryptedData > sealedsecret.json
+  //   encryptedData: std.parseJson(importstr "sealedsecret.json")
   SealedSecret(name): $._Object("bitnami.com/v1alpha1", "SealedSecret", name) {
     spec: {
-      data:
-        if self.datalines_ != ""
-        then std.join("", std.split(self.datalines_, "\n"))
-        else error "data or datalines_ required (output from: kubeseal | jq -r .spec.data)",
-      datalines_:: "",
+      encryptedData: {},
     },
-    assert std.base64Decode(self.spec.data) != "",
+    assert std.length(std.objectFields(self.spec.encryptedData)) != 0,
   },
 
   // NB: helper method to access several Kubernetes objects podRef,
