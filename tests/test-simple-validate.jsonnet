@@ -1,5 +1,6 @@
 local bitnami = import "../bitnami.libsonnet";
 local kube = import "../kube.libsonnet";
+local utils = import "../utils.libsonnet";
 
 local stack = {
   namespace:: "foons",
@@ -84,10 +85,12 @@ local stack = {
   // NB: all object below needing to spec a Pod will just
   // use above particular pod manifest just for convenience
   deploy: kube.Deployment($.name + "-deploy") {
+    local this = self,
     metadata+: { namespace: $.namespace },
     spec+: {
       template+: {
         spec+: $.pod.spec {
+          affinity+: utils.weakNodeDiversity(this.spec.selector),
           serviceAccountName: $.sa.metadata.name,
         },
       },
