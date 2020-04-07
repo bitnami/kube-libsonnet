@@ -171,6 +171,7 @@
       ports: [
         {
           port: service.port,
+          name: service.target_pod.spec.containers[0].ports[0].name,
           targetPort: service.target_pod.spec.containers[0].ports[0].containerPort,
         },
       ],
@@ -220,7 +221,7 @@
     imagePullPolicy: if std.endsWith(self.image, ":latest") then "Always" else "IfNotPresent",
 
     envList(map):: [
-      if std.type(map[x]) == "object" then { name: x, valueFrom: map[x] } else { name: x, value: map[x] }
+      if std.type(map[x]) == "object" then { name: x, valueFrom: map[x] } else { name: x, value: std.toString(map[x]) }
       for x in std.objectFields(map)
     ],
 
@@ -245,7 +246,7 @@
     local this = self,
     target_pod:: error "target_pod required",
     spec: {
-      minAvailable: 1,
+      assert std.objectHas(self, "minAvailable") || std.objectHas(self, "maxUnavailable") : "exactly one of minAvailable/maxUnavailable required",
       selector: {
         matchLabels: this.target_pod.metadata.labels,
       },
@@ -500,7 +501,6 @@
     },
   },
 
-  // NB: kubernetes >= 1.8.x has batch/v1beta1 (olders were batch/v2alpha1)
   CronJob(name): $._Object("batch/v1beta1", "CronJob", name) {
     local cronjob = self,
 
@@ -514,7 +514,6 @@
           },
         },
       },
-
       schedule: error "Need to provide spec.schedule",
       successfulJobsHistoryLimit: 10,
       failedJobsHistoryLimit: 20,
@@ -531,7 +530,6 @@
         restartPolicy: "OnFailure",
       },
     },
-
     completions: 1,
     parallelism: 1,
   },

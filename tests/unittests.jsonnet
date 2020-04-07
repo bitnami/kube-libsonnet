@@ -1,4 +1,5 @@
 local kube = import "../kube.libsonnet";
+local utils = import "../utils.libsonnet";
 
 local an_obj = kube._Object("v1", "Gentle", "foo");
 local a_pod = kube.Pod("foo") {
@@ -20,6 +21,7 @@ local a_deploy = kube.Deployment("foo") {
   spec+: { template+: { metadata+: a_pod.metadata, spec+: a_pod.spec } },
 };
 // Basic unittesting for methods that are not exercised by the other e2e-ish tests
+// kube.libsonnet
 std.assertEqual(kube.objectValues({ a: 1, b: 2 }), [1, 2]) &&
 std.assertEqual(kube.objectItems({ a: 1, b: 2 }), [["a", 1], ["b", 2]]) &&
 std.assertEqual(kube.hyphenate("foo_bar_baz"), ("foo-bar-baz")) &&
@@ -51,4 +53,65 @@ std.assertEqual(
 std.assertEqual(
   kube.podLabelsSelector(a_deploy),
   { podSelector: { matchLabels: { name: "foo", foo: "bar", bar: "qxx" } } }
-)
+) &&
+// utils.libsonnet
+std.assertEqual(
+  [utils.path_join("foo", "bar"), utils.path_join("foo/", "bar")],
+  ["foo/bar", "foo/bar"]
+) &&
+std.assertEqual(
+  utils.trimUrl("http://example.com/foo/"),
+  "http://example.com/foo"
+) &&
+std.assertEqual(
+  std.parseJson(utils.toJson('{ "foo": "bar\nqqq" }')),
+  '{ "foo": "bar\nqqq" }',
+) &&
+std.assertEqual(
+  utils.parentDomain("foo.example.com"),
+  "example.com"
+) &&
+std.assertEqual(
+  utils.parentDomain("foo.example.com"),
+  "example.com"
+) &&
+std.assertEqual(
+  std.uniq([
+    x.podAffinityTerm.labelSelector
+    for x in utils.weakNodeDiversity({ foo: "bar" }).podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution
+  ]),
+  [{ foo: "bar" }]
+) &&
+std.assertEqual(
+  (utils.HashedConfigMap("hashed-cm")) { data+: { foo: "bar" } }.metadata.name,
+  "hashed-cm-94232c5",
+) &&
+std.assertEqual(
+  (
+    (utils.HashedConfigMap("hashed-cm")) {
+      data+: { foo: "bar" },
+    }.metadata.name
+    ==
+    (utils.HashedConfigMap("hashed-cm")) {
+      data+: { foo: "baz" },
+    }.metadata.name
+  ),
+  false,
+) &&
+std.assertEqual(
+  (utils.HashedSecret("hashed-secret")) { data+: { foo: std.base64("bar") } }.metadata.name,
+  "hashed-secret-16f81db",
+) &&
+std.assertEqual(
+  (
+    (utils.HashedSecret("hashed-secret")) {
+      data+: { foo: std.base64("bar") },
+    }.metadata.name
+    ==
+    (utils.HashedConfigMap("hashed-secret")) {
+      data+: { foo: std.base64("baz") },
+    }.metadata.name
+  ),
+  false,
+) &&
+true
