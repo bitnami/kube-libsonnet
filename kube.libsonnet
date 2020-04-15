@@ -264,7 +264,10 @@
     containers_:: {},
 
     local container_names_ordered = [self.default_container] + [n for n in container_names if n != self.default_container],
-    containers: [{ name: $.hyphenate(name) } + self.containers_[name] for name in container_names_ordered if self.containers_[name] != null],
+    containers: (
+      assert std.length(self.containers_) > 0 : "Pod must have at least one container (via containers_ map)";
+      [{ name: $.hyphenate(name) } + self.containers_[name] for name in container_names_ordered if self.containers_[name] != null]
+    ),
 
     // Note initContainers are inherently ordered, and using this
     // named object will lose that ordering.  If order matters, then
@@ -281,7 +284,7 @@
 
     terminationGracePeriodSeconds: 30,
 
-    assert std.length(self.containers) > 0 : "must have at least one container",
+    assert std.length(self.containers) > 0 : "Pod must have at least one container (via containers array)",
 
     // Return an array of pod's ports numbers
     ports(proto):: [
@@ -339,7 +342,7 @@
 
   // subtype of EnvVarSource
   ConfigMapRef(configmap, key): {
-    assert std.objectHas(configmap.data, key) : "%s not in configmap.data" % [key],
+    assert std.objectHas(configmap.data, key) : "ConfigMap '%s' doesn't have '%s' field in configmap.data" % [configmap.metadata.name, key],
     configMapKeyRef: {
       name: configmap.metadata.name,
       key: key,
@@ -356,7 +359,7 @@
 
   // subtype of EnvVarSource
   SecretKeyRef(secret, key): {
-    assert std.objectHas(secret.data, key) : "%s not in secret.data" % [key],
+    assert std.objectHas(secret.data, key) : "Secret '%s' doesn't have '%s' field in secret.data" % [secret.metadata.name, key],
     secretKeyRef: {
       name: secret.metadata.name,
       key: key,
