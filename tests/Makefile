@@ -22,6 +22,7 @@ ALL_K8S_VALIDATE_JSONNET=$(wildcard *-validate.jsonnet)
 PASS_JSONNET=$(sort $(wildcard test*pass.jsonnet))
 FAIL_JSONNET=$(sort $(wildcard test*fail.jsonnet))
 UNIT_JSONNET=$(sort $(wildcard unittest*.jsonnet))
+ALL_JSONNET=$(sort $(wildcard *.jsonnet))
 
 # Phony %.diff and golden/*.json targets
 PHONY_GOLDEN=$(patsubst %.jsonnet,golden/%.json,$(PASS_JSONNET))
@@ -62,7 +63,7 @@ unittests:
 
 lint: req-jsonnetfmt
 	@set -e; errs=0; \
-        for f in $(PASS_JSONNET) $(LIB_JSONNET); do \
+        for f in $(ALL_JSONNET) $(LIB_JSONNET); do \
 	  if ! jsonnetfmt --test $(JSONNET_FMT) -- $$f; then \
 	    echo "FAILED lint: $$f" >&2; \
 	    errs=$$(( $$errs + 1 )); \
@@ -110,7 +111,7 @@ diff-help:
 
 fix-lint: req-jsonnetfmt
 	@set -e; \
-	for f in $(PASS_JSONNET) $(LIB_JSONNET); do \
+	for f in $(ALL_JSONNET) $(LIB_JSONNET); do \
 	  echo jsonnetfmt -i $(JSONNET_FMT) -- $$f; \
 	  jsonnetfmt -i $(JSONNET_FMT) -- $$f; \
 	done

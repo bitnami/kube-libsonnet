@@ -4,6 +4,6 @@ simple_validate {
   deploy_pdb+: {
     spec+: {
       minAvailable:: null,
-    }
+    },
   },
 }

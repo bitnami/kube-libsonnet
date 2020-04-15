@@ -5,6 +5,6 @@ simple_validate {
     spec+: {
       minAvailable: 1,
       maxUnavailable: 2,
-    }
+    },
   },
 }

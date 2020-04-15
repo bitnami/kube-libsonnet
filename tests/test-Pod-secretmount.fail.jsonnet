@@ -3,7 +3,7 @@ local simple_validate = (import "test-simple-validate.pass.jsonnet").items_;
 simple_validate {
   pod+: {
     metadata+: {
-    spec+: {
+      spec+: {
         containers_+: {
           foo_cont+: {
             env_+: {
