@@ -646,7 +646,7 @@
     spec: {
       encryptedData: {},
     },
-    assert std.length(std.objectFields(self.spec.encryptedData)) != 0,
+    assert std.length(std.objectFields(self.spec.encryptedData)) != 0 : "SealedSecret '%s' has empty encryptedData field" % name,
   },
 
   // NB: helper method to access several Kubernetes objects podRef,
