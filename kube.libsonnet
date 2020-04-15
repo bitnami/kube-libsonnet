@@ -118,6 +118,8 @@
     std.join("", [remapChar(c, "a", "z", "A") for c in std.stringChars(s)])
   ),
 
+  boolXor(x, y):: ((if x then 1 else 0) + (if y then 1 else 0) == 1),
+
   _Object(apiVersion, kind, name):: {
     local this = self,
     apiVersion: apiVersion,
@@ -246,7 +248,10 @@
     local this = self,
     target_pod:: error "target_pod required",
     spec: {
-      assert std.objectHas(self, "minAvailable") || std.objectHas(self, "maxUnavailable") : "exactly one of minAvailable/maxUnavailable required",
+      assert $.boolXor(
+        std.objectHas(self, "minAvailable"),
+        std.objectHas(self, "maxUnavailable")
+      ) : "PDB '%s': exactly one of minAvailable/maxUnavailable required" % name,
       selector: {
         matchLabels: this.target_pod.metadata.labels,
       },
