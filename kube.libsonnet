@@ -118,6 +118,8 @@
     std.join("", [remapChar(c, "a", "z", "A") for c in std.stringChars(s)])
   ),
 
+  boolXor(x, y):: ((if x then 1 else 0) + (if y then 1 else 0) == 1),
+
   _Object(apiVersion, kind, name):: {
     local this = self,
     apiVersion: apiVersion,
@@ -246,7 +248,10 @@
     local this = self,
     target_pod:: error "target_pod required",
     spec: {
-      assert std.objectHas(self, "minAvailable") || std.objectHas(self, "maxUnavailable") : "exactly one of minAvailable/maxUnavailable required",
+      assert $.boolXor(
+        std.objectHas(self, "minAvailable"),
+        std.objectHas(self, "maxUnavailable")
+      ) : "PDB '%s': exactly one of minAvailable/maxUnavailable required" % name,
       selector: {
         matchLabels: this.target_pod.metadata.labels,
       },
@@ -264,7 +269,10 @@
     containers_:: {},
 
     local container_names_ordered = [self.default_container] + [n for n in container_names if n != self.default_container],
-    containers: [{ name: $.hyphenate(name) } + self.containers_[name] for name in container_names_ordered if self.containers_[name] != null],
+    containers: (
+      assert std.length(self.containers_) > 0 : "Pod must have at least one container (via containers_ map)";
+      [{ name: $.hyphenate(name) } + self.containers_[name] for name in container_names_ordered if self.containers_[name] != null]
+    ),
 
     // Note initContainers are inherently ordered, and using this
     // named object will lose that ordering.  If order matters, then
@@ -281,7 +289,7 @@
 
     terminationGracePeriodSeconds: 30,
 
-    assert std.length(self.containers) > 0 : "must have at least one container",
+    assert std.length(self.containers) > 0 : "Pod must have at least one container (via containers array)",
 
     // Return an array of pod's ports numbers
     ports(proto):: [
@@ -339,7 +347,7 @@
 
   // subtype of EnvVarSource
   ConfigMapRef(configmap, key): {
-    assert std.objectHas(configmap.data, key) : "%s not in configmap.data" % [key],
+    assert std.objectHas(configmap.data, key) : "ConfigMap '%s' doesn't have '%s' field in configmap.data" % [configmap.metadata.name, key],
     configMapKeyRef: {
       name: configmap.metadata.name,
       key: key,
@@ -356,7 +364,7 @@
 
   // subtype of EnvVarSource
   SecretKeyRef(secret, key): {
-    assert std.objectHas(secret.data, key) : "%s not in secret.data" % [key],
+    assert std.objectHas(secret.data, key) : "Secret '%s' doesn't have '%s' field in secret.data" % [secret.metadata.name, key],
     secretKeyRef: {
       name: secret.metadata.name,
       key: key,
@@ -646,7 +654,7 @@
     spec: {
       encryptedData: {},
     },
-    assert std.length(std.objectFields(self.spec.encryptedData)) != 0,
+    assert std.length(std.objectFields(self.spec.encryptedData)) != 0 : "SealedSecret '%s' has empty encryptedData field" % name,
   },
 
   // NB: helper method to access several Kubernetes objects podRef,

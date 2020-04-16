@@ -97,6 +97,13 @@ local stack = {
     },
   },
 
+  deploy_pdb: kube.PodDisruptionBudget($.name + "-deploy-pdb") {
+    target_pod: $.deploy.spec.template,
+    spec+: {
+      minAvailable: 1,
+    },
+  },
+
   sts: kube.StatefulSet($.name + "-sts") {
     metadata+: { namespace: $.namespace },
     spec+: {
