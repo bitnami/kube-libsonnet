@@ -12,18 +12,28 @@ K3S_V1_17=v1.17.2-k3s1
 E2E_K3S_VERSIONS=$(K3S_V1_14) $(K3S_V1_15) $(K3S_V1_16) $(K3S_V1_17)
 
 SHELL=/bin/bash
+# Rather arbitrary Bitnami style choice
 JSONNET_FMT=--indent 2 --string-style d --comment-style s --no-pad-arrays --pad-objects --pretty-field-names
 
-ALL_JSONNET=$(wildcard *.jsonnet)
-UNITTEST_JSONNET=$(wildcard unittest*.jsonnet)
 LIB_JSONNET=$(wildcard ../*.libsonnet)
 ALL_K8S_VALIDATE_JSONNET=$(wildcard *-validate.jsonnet)
 
-PHONY_GOLDEN=$(patsubst %.jsonnet,golden/%.json,$(ALL_JSONNET))
-PHONY_DIFF=$(patsubst %.jsonnet,%.diff,$(ALL_JSONNET))
-PHONY_PARSE=$(patsubst %.jsonnet,%.parse,$(ALL_JSONNET))
+# Filenames provide testing objective
+PASS_JSONNET=$(sort $(wildcard test*pass.jsonnet))
+FAIL_JSONNET=$(sort $(wildcard test*fail.jsonnet))
+UNIT_JSONNET=$(sort $(wildcard unittest*.jsonnet))
+ALL_JSONNET=$(sort $(wildcard *.jsonnet))
 
-## These need to be in-sync with docker-compose.yaml
+# Phony %.diff and golden/*.json targets
+PHONY_GOLDEN=$(patsubst %.jsonnet,golden/%.json,$(PASS_JSONNET))
+PHONY_DIFF=$(patsubst %.jsonnet,%.diff,$(PASS_JSONNET))
+
+# Phony %.eval-pass and %.eval-fail targets
+PHONY_EVAL_PASS=$(patsubst %.jsonnet,%.eval-pass,$(PASS_JSONNET))
+PHONY_EVAL_FAIL=$(patsubst %.jsonnet,%.eval-fail,$(FAIL_JSONNET))
+
+## NOTE: below values need to be in-sync with docker-compose.yaml
+##       (not automated to avoid over-engineering parsing/alike)
 DOCKER_E2E=e2e-test
 TMP_RANCHER=./tmp-rancher
 PROJECT=kubelibsonnet
@@ -44,12 +54,12 @@ e2e-tests-%: req-docker req-docker-compose
 	docker-compose -p $(PROJECT) down
 	rm -rf ./$(TMP_RANCHER)/root
 
-local-tests: unittests lint parse diff
+local-tests: req-jsonnet unittests lint $(PHONY_EVAL_PASS) $(PHONY_EVAL_FAIL) diff
 
-# NB: unittest jsonnet files are also covered by parse and diff targets,
+# NB: unittest jsonnet files are also covered by eval-pass and diff targets,
 #     called out here for convenience
-unittests: req-jsonnet
-	jsonnet $(UNITTEST_JSONNET)
+unittests:
+	jsonnet $(UNIT_JSONNET)
 
 lint: req-jsonnetfmt
 	@set -e; errs=0; \
@@ -64,8 +74,6 @@ lint: req-jsonnetfmt
 	  echo "      $(MAKE) fix-lint lint"; \
 	  exit 1; \
 	fi
-
-parse: req-jsonnet $(PHONY_PARSE)
 
 diff: diff-help $(PHONY_DIFF)
 
@@ -82,8 +90,16 @@ kube-validate: req-kubectl req-kubecfg
 %.diff: %.jsonnet
 	diff -u golden/$(*).json <(jsonnet $(<))
 
-%.parse: %.jsonnet
-	jsonnet $(<) > /dev/null
+%.eval-pass: %.jsonnet
+	@echo "INFO: must PASS: $(<)"
+	@(jsonnet $(<) > /dev/null)
+	@echo "OK[PASS]: $(<)"
+
+%.eval-fail: %.jsonnet
+	@echo "INFO: must FAIL: $(<)"
+	@echo -n "| "; (jsonnet $(<) > /dev/null) 2>&1 | grep RUNTIME.ERROR
+	@echo "OK[FAIL]: $(<)"
+
 
 golden/%.json: %.jsonnet
 	jsonnet $(<) > $(@)
@@ -93,7 +109,7 @@ diff-help:
 	@echo "      $(MAKE) gen-golden diff"
 	@echo
 
-fix-lint: req-jsonnet
+fix-lint: req-jsonnetfmt
 	@set -e; \
 	for f in $(ALL_JSONNET) $(LIB_JSONNET); do \
 	  echo jsonnetfmt -i $(JSONNET_FMT) -- $$f; \
@@ -105,4 +121,4 @@ req-%:
 
 gen-golden: $(PHONY_GOLDEN)
 
-.PHONY: unittests lint parse validate diff %.parse %.diff golden/%.json diff-help fix-lint gen-golden
+.PHONY: unittests lint eval-pass eval-fail validate diff %.eval-pass %.evail-fail %.diff golden/%.json diff-help fix-lint gen-golden
