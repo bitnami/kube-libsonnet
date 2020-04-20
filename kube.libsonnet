@@ -577,13 +577,13 @@
     assert std.length(rel_paths) == 0 : "paths must be absolute: " + rel_paths,
   },
 
-  ManagedCertificates(name, domains): $._Object('networking.gke.io/v1beta1', 'ManagedCertificate', name) {
+  ManagedCertificates(name, domains): $._Object("networking.gke.io/v1beta1", "ManagedCertificate", name) {
     spec: {
       domains: domains,
     },
   },
 
-  BackendConfig(name): $._Object('cloud.google.com/v1beta1', 'BackendConfig', name) {
+  BackendConfig(name): $._Object("cloud.google.com/v1beta1", "BackendConfig", name) {
     spec: {},
   },
 
