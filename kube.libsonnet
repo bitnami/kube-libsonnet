@@ -577,14 +577,17 @@
     assert std.length(rel_paths) == 0 : "paths must be absolute: " + rel_paths,
   },
 
-  ManagedCertificates(name, domains): $._Object("networking.gke.io/v1beta1", "ManagedCertificate", name) {
-    spec: {
-      domains: domains,
+  gke:: {
+    ManagedCertificate(name): $._Object("networking.gke.io/v1beta1", "ManagedCertificate", name) {
+      spec: {
+        domains: error "spec.domains array is required",
+      },
+      assert std.length(self.spec.domains) > 0 : "ManagedCertificate '%s' spec.domains array must not be empty" % self.metadata.name,
     },
-  },
 
-  BackendConfig(name): $._Object("cloud.google.com/v1beta1", "BackendConfig", name) {
-    spec: {},
+    BackendConfig(name): $._Object("cloud.google.com/v1beta1", "BackendConfig", name) {
+      spec: {},
+    },
   },
 
   ThirdPartyResource(name): $._Object("extensions/v1beta1", "ThirdPartyResource", name) {
