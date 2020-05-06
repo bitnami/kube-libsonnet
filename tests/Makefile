@@ -4,19 +4,20 @@ K3S_V1_14=v0.8.0
 K3S_V1_15=v0.9.0
 K3S_V1_16=v1.0.1
 K3S_V1_17=v1.17.2-k3s1
+K3S_V1_18=v1.18.2-rc4-k3s1
 #
 # Since https://github.com/bitnami-labs/kube-libsonnet/issues/32 we support
 # kubernetes v1.14+ (Ingress apiVersion deprecated in v1.18, available since v1.14).
 #
 # Kubernetes releases we cover with e2e testing:
-E2E_K3S_VERSIONS=$(K3S_V1_14) $(K3S_V1_15) $(K3S_V1_16) $(K3S_V1_17)
+E2E_K3S_VERSIONS=$(K3S_V1_14) $(K3S_V1_15) $(K3S_V1_16) $(K3S_V1_17) $(K3S_V1_18)
 
 SHELL=/bin/bash
 # Rather arbitrary Bitnami style choice
 JSONNET_FMT=--indent 2 --string-style d --comment-style s --no-pad-arrays --pad-objects --pretty-field-names
 
 LIB_JSONNET=$(wildcard ../*.libsonnet)
-ALL_K8S_VALIDATE_JSONNET=$(wildcard *-validate.jsonnet)
+ALL_K8S_VALIDATE_JSONNET=$(wildcard *-validate.pass.jsonnet)
 
 # Filenames provide testing objective
 PASS_JSONNET=$(sort $(wildcard test*pass.jsonnet))
