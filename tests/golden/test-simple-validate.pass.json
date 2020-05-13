@@ -153,6 +153,10 @@
                                     "name": "foo-secret"
                                  }
                               }
+                           },
+                           {
+                              "name": "other_key",
+                              "value": null
                            }
                         ],
                         "image": "nginx:1.12",
@@ -273,6 +277,10 @@
                                     "name": "foo-secret"
                                  }
                               }
+                           },
+                           {
+                              "name": "other_key",
+                              "value": null
                            }
                         ],
                         "image": "nginx:1.12",
@@ -541,6 +549,10 @@
                               "name": "foo-secret"
                            }
                         }
+                     },
+                     {
+                        "name": "other_key",
+                        "value": null
                      }
                   ],
                   "image": "nginx:1.12",
@@ -735,6 +747,10 @@
                                     "name": "foo-secret"
                                  }
                               }
+                           },
+                           {
+                              "name": "other_key",
+                              "value": null
                            }
                         ],
                         "image": "nginx:1.12",

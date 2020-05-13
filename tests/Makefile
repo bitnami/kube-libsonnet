@@ -4,7 +4,7 @@ K3S_V1_14=v0.8.0
 K3S_V1_15=v0.9.0
 K3S_V1_16=v1.0.1
 K3S_V1_17=v1.17.2-k3s1
-K3S_V1_18=v1.18.2-rc4-k3s1
+K3S_V1_18=v1.18.2-k3s1
 #
 # Since https://github.com/bitnami-labs/kube-libsonnet/issues/32 we support
 # kubernetes v1.14+ (Ingress apiVersion deprecated in v1.18, available since v1.14).

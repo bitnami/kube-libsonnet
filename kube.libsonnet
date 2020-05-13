@@ -223,7 +223,15 @@
     imagePullPolicy: if std.endsWith(self.image, ":latest") then "Always" else "IfNotPresent",
 
     envList(map):: [
-      if std.type(map[x]) == "object" then { name: x, valueFrom: map[x] } else { name: x, value: std.toString(map[x]) }
+      if std.type(map[x]) == "object"
+      then {
+        name: x,
+        valueFrom: map[x],
+      } else {
+        // Let `null` value stay as such (vs string-ified)
+        name: x,
+        value: if map[x] == null then null else std.toString(map[x]),
+      }
       for x in std.objectFields(map)
     ],
 
