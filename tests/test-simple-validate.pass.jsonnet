@@ -66,6 +66,7 @@ local stack = {
           image: "nginx:1.12",
           env_+: {
             my_secret: kube.SecretKeyRef($.secret, "sec_key"),
+            other_key: null,
           },
           ports_+: {
             http: { containerPort: 80 },
