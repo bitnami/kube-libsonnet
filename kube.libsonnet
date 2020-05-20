@@ -53,10 +53,15 @@
 // (client-side, and gives better line information).
 
 {
+  // In case you may want/need to skip assertions for speed reasons (rather big configmaps/etc),
+  // load the library with e.g.
+  //   local kube = (import "lib/kube.libsonnet") { _assert:: false };
+  _assert:: true,
+
   // resource contructors will use kinds/versions/fields compatible at least with version:
   minKubeVersion: {
     major: 1,
-    minor: 9,
+    minor: 14,
     version: "%s.%s" % [self.major, self.minor],
   },
 
@@ -74,7 +79,7 @@
     local len = std.length(s);
     local leading = std.substr(s, 0, len - 1);
     local last = std.parseInt(std.substr(s, len - 1, 1));
-    assert last < 8 : "found '%s' digit >= 8" % [last];
+    assert (!$._assert) || last < 8 : "found '%s' digit >= 8" % [last];
     last + (if len > 1 then 8 * $.parseOctal(leading) else 0)
   ),
 
@@ -249,14 +254,14 @@
 
     stdin: false,
     tty: false,
-    assert !self.tty || self.stdin : "tty=true requires stdin=true",
+    assert (!$._assert) || (!self.tty || self.stdin) : "tty=true requires stdin=true",
   },
 
   PodDisruptionBudget(name): $._Object("policy/v1beta1", "PodDisruptionBudget", name) {
     local this = self,
     target_pod:: error "target_pod required",
     spec: {
-      assert $.boolXor(
+      assert (!$._assert) || $.boolXor(
         std.objectHas(self, "minAvailable"),
         std.objectHas(self, "maxUnavailable")
       ) : "PDB '%s': exactly one of minAvailable/maxUnavailable required" % name,
@@ -278,7 +283,7 @@
 
     local container_names_ordered = [self.default_container] + [n for n in container_names if n != self.default_container],
     containers: (
-      assert std.length(self.containers_) > 0 : "Pod must have at least one container (via containers_ map)";
+      assert (!$._assert) || std.length(self.containers_) > 0 : "Pod must have at least one container (via containers_ map)";
       [{ name: $.hyphenate(name) } + self.containers_[name] for name in container_names_ordered if self.containers_[name] != null]
     ),
 
@@ -297,7 +302,7 @@
 
     terminationGracePeriodSeconds: 30,
 
-    assert std.length(self.containers) > 0 : "Pod must have at least one container (via containers array)",
+    assert (!$._assert) || std.length(self.containers) > 0 : "Pod must have at least one container (via containers array)",
 
     // Return an array of pod's ports numbers
     ports(proto):: [
@@ -350,12 +355,12 @@
       for k in std.objectFields(self.data)
       if std.type(self.data[k]) != "string"
     ],
-    assert std.length(nonstrings) == 0 : "data contains non-string values: %s" % [nonstrings],
+    assert (!$._assert) || std.length(nonstrings) == 0 : "data contains non-string values: %s" % [nonstrings],
   },
 
   // subtype of EnvVarSource
   ConfigMapRef(configmap, key): {
-    assert std.objectHas(configmap.data, key) : "ConfigMap '%s' doesn't have '%s' field in configmap.data" % [configmap.metadata.name, key],
+    assert (!$._assert) || std.objectHas(configmap.data, key) : "ConfigMap '%s' doesn't have '%s' field in configmap.data" % [configmap.metadata.name, key],
     configMapKeyRef: {
       name: configmap.metadata.name,
       key: key,
@@ -372,7 +377,7 @@
 
   // subtype of EnvVarSource
   SecretKeyRef(secret, key): {
-    assert std.objectHas(secret.data, key) : "Secret '%s' doesn't have '%s' field in secret.data" % [secret.metadata.name, key],
+    assert (!$._assert) || std.objectHas(secret.data, key) : "Secret '%s' doesn't have '%s' field in secret.data" % [secret.metadata.name, key],
     secretKeyRef: {
       name: secret.metadata.name,
       key: key,
@@ -461,7 +466,7 @@
       minReplicas: hpa.target.spec.replicas,
       maxReplicas: error "maxReplicas required",
 
-      assert self.maxReplicas >= self.minReplicas,
+      assert (!$._assert) || self.maxReplicas >= self.minReplicas,
     },
   },
 
@@ -501,7 +506,7 @@
       ],
 
       replicas: 1,
-      assert self.replicas >= 1,
+      assert (!$._assert) || self.replicas >= 1,
     },
   },
 
@@ -582,7 +587,7 @@
       for p in r.http.paths
       if !std.startsWith(p.path, "/")
     ],
-    assert std.length(rel_paths) == 0 : "paths must be absolute: " + rel_paths,
+    assert (!$._assert) || std.length(rel_paths) == 0 : "paths must be absolute: " + rel_paths,
   },
 
   ThirdPartyResource(name): $._Object("extensions/v1beta1", "ThirdPartyResource", name) {
@@ -662,7 +667,7 @@
     spec: {
       encryptedData: {},
     },
-    assert std.length(std.objectFields(self.spec.encryptedData)) != 0 : "SealedSecret '%s' has empty encryptedData field" % name,
+    assert (!$._assert) || std.length(std.objectFields(self.spec.encryptedData)) != 0 : "SealedSecret '%s' has empty encryptedData field" % name,
   },
 
   // NB: helper method to access several Kubernetes objects podRef,
