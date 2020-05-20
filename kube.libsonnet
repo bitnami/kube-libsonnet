@@ -340,18 +340,7 @@
     configMap: { name: configmap.metadata.name },
   },
 
-  ConfigMap(name): $._Object("v1", "ConfigMap", name) {
-    data: {},
-
-    // I keep thinking data values can be any JSON type.  This check
-    // will remind me that they must be strings :(
-    local nonstrings = [
-      k
-      for k in std.objectFields(self.data)
-      if std.type(self.data[k]) != "string"
-    ],
-    assert std.length(nonstrings) == 0 : "data contains non-string values: %s" % [nonstrings],
-  },
+  ConfigMap(name): $._Object("v1", "ConfigMap", name),
 
   // subtype of EnvVarSource
   ConfigMapRef(configmap, key): {
