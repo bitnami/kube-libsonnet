@@ -1,4 +1,4 @@
-local kube = import "lib/kube.libsonnet";
+local kube = import "../../kube.libsonnet";
 
 local labels = {
   tier: "backend",

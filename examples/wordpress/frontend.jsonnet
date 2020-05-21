@@ -1,4 +1,4 @@
-local kube = import "lib/kube.libsonnet";
+local kube = import "../../kube.libsonnet";
 local be = import "backend.jsonnet";
 
 local labels = {
