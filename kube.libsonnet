@@ -633,7 +633,7 @@
     apiGroup: "rbac.authorization.k8s.io",
   },
 
-  RoleBinding(name): $._Object("rbac.authorization.k8s.io/v1`", "RoleBinding", name) {
+  RoleBinding(name): $._Object("rbac.authorization.k8s.io/v1", "RoleBinding", name) {
     local rb = self,
 
     subjects_:: [],
