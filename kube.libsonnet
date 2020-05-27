@@ -618,7 +618,7 @@
   ServiceAccount(name): $._Object("v1", "ServiceAccount", name) {
   },
 
-  Role(name): $._Object("rbac.authorization.k8s.io/v1beta1", "Role", name) {
+  Role(name): $._Object("rbac.authorization.k8s.io/v1", "Role", name) {
     rules: [],
   },
 
@@ -638,7 +638,7 @@
     apiGroup: "rbac.authorization.k8s.io",
   },
 
-  RoleBinding(name): $._Object("rbac.authorization.k8s.io/v1beta1", "RoleBinding", name) {
+  RoleBinding(name): $._Object("rbac.authorization.k8s.io/v1", "RoleBinding", name) {
     local rb = self,
 
     subjects_:: [],
