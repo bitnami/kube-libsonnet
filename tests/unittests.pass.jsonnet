@@ -108,7 +108,7 @@ std.assertEqual(
       data+: { foo: std.base64("bar") },
     }.metadata.name
     ==
-    (utils.HashedConfigMap("hashed-secret")) {
+    (utils.HashedSecret("hashed-secret")) {
       data+: { foo: std.base64("baz") },
     }.metadata.name
   ),
