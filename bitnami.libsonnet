@@ -46,7 +46,7 @@ local perCloudSvcSpec(cloud) = (
     spec+: { type: "LoadBalancer" } + perCloudSvcSpec(cloud),
   },
 
-  Ingress(name): kube.Ingress(name) {
+  Ingress(name, class=null): kube.Ingress(name) {
     local ing = self,
 
     host:: error "host required",
@@ -54,41 +54,18 @@ local perCloudSvcSpec(cloud) = (
     // Default to single-service - override if you want something else.
     paths:: [{ path: "/", backend: ing.target_svc.name_port }],
     secretName:: "%s-cert" % [ing.metadata.name],
+
     // cert_provider can either be:
-    // - "kcm": DEPRECATED (will be removed in T26526) uses old kube-cert-manager via route53 for ACME dns-01 challenge
-    // - "cm-dns": cert-manager using route53 for ACME dns-01 challenge
-    // - "cm-http": cert-manager using ACME http, requires public ingress (kube-lego already replaced by cert-manager)
-    cert_provider:: "cm-dns",
+    // - "cm-dns": cert-manager using route53 for ACME dns-01 challenge (default)
+    // - "cm-http": cert-manager using ACME http, requires public ingress
+    cert_provider:: $.CertManager.default_ingress_provider,
 
-    kcm_metadata:: {
+    metadata+: $.CertManager.IngressMeta[ing.cert_provider] {
       annotations+: {
-        "stable.k8s.psg.io/kcm.provider": "route53",
-        "stable.k8s.psg.io/kcm.email": "sre@bitnami.com",
-      },
-      labels+: {
-        "stable.k8s.psg.io/kcm.class": "default",
-      },
+        // Add ingress class iff specified
+        [if class != null then "kubernetes.io/ingress.class" else null]: class,
+      }
     },
-    cm_dns_metadata:: {
-      annotations+: {
-        "cert-manager.io/cluster-issuer": "letsencrypt-prod-dns",
-        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-dns",
-        "certmanager.k8s.io/acme-challenge-type": "dns01",
-        "certmanager.k8s.io/acme-dns01-provider": "default",
-      },
-    },
-    cm_http_metadata:: {
-      annotations+: {
-        "cert-manager.io/cluster-issuer": "letsencrypt-prod-http",
-        "certmanager.k8s.io/cluster-issuer": "letsencrypt-prod-http",
-      },
-    },
-
-    metadata+: {
-      kcm: ing.kcm_metadata,
-      "cm-dns": ing.cm_dns_metadata,
-      "cm-http": ing.cm_http_metadata,
-    }[ing.cert_provider],
     spec+: {
       tls: [
         {
@@ -139,6 +116,67 @@ local perCloudSvcSpec(cloud) = (
           },
         },
       ],
+    },
+  },
+  CertManager:: {
+    // Deployed cluster issuers' names:
+    cluster_issuers:: {
+      acme_dns:: "letsencrypt-prod-dns",
+      acme_http:: "letsencrypt-prod-http",
+      in_cluster:: "in-cluster-issuer",
+    },
+
+    default_ingress_provider:: "cm-dns",
+    IngressMeta:: {
+      "cm-dns":: {
+        annotations+: {
+          "cert-manager.io/cluster-issuer": $.CertManager.cluster_issuers.acme_dns,
+        },
+      },
+      "cm-http":: {
+        annotations+: {
+          "cert-manager.io/cluster-issuer": $.CertManager.cluster_issuers.acme_http,
+        },
+      },
+    },
+
+
+    // CertManager ClusterIssuer object
+    ClusterIssuer(name):: kube._Object("cert-manager.io/v1alpha2", "ClusterIssuer", name),
+
+    // Use as:
+    //   my_cert: kube.CertManager.InCluster.Certificate("my-tls-cert", "my-namespace")
+    // to get a Kubernetes TLS secret named "my-tls-cert" in "my-namespace"
+    Certificate(name):: kube._Object("cert-manager.io/v1alpha2", "Certificate", name) {
+      assert std.objectHas(self.metadata, "namespace"): "Certificate('%s') must set metadata.namespace" % self.metadata.name,
+    },
+
+    InCluster:: {
+      // Broadest usage is ["any"], limit to mTLS usage:
+      default_usages:: ["digital signature", "key encipherment"],
+      // Ref to our in-cluster ClusterIssuer
+      cluster_issuer:: $.CertManager.ClusterIssuer($.CertManager.cluster_issuers.in_cluster) {
+        spec+: {
+          selfSigned: {},
+        },
+      },
+      Certificate(name, namespace):: $.CertManager.Certificate(name) {
+        metadata+: { namespace: namespace },
+        spec+: {
+          secretName: name,
+          issuerRef: kube.CrossVersionObjectReference($.CertManager.InCluster.cluster_issuer) {
+            // issuerRef doesn't have the apiVersion field
+            apiVersion:: null,
+          },
+          commonName: name,
+          dnsNames: [
+            name,
+            "%s.%s" % [name, namespace],
+            "%s.%s.svc" % [name, namespace],
+          ],
+          usages: $.CertManager.InCluster.default_usages,
+        },
+      },
     },
   },
 }

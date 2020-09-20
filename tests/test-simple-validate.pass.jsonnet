@@ -221,6 +221,7 @@ local stack = {
     },
   },
   deploy_vpa: kube.createVPAFor($.deploy),
+  tls_cert: bitnami.CertManager.InCluster.Certificate("foo-cert", $.namespace),
 };
 
 kube.List() {
