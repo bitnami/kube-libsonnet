@@ -10,7 +10,9 @@ local crds = {
       ],
     },
   },
-
+  // Simplified cert-manager CRD from https://github.com/jetstack/cert-manager/blob/master/deploy/crds/crd-certificates.yaml,
+  // enough to test bitnami.CertManager object(s)
+  cm_certificate_crd: kube.CustomResourceDefinition("cert-manager.io", "v1alpha2", "Certificate"),
 };
 
 crds
