@@ -64,7 +64,7 @@ local perCloudSvcSpec(cloud) = (
       annotations+: {
         // Add ingress class iff specified
         [if class != null then "kubernetes.io/ingress.class" else null]: class,
-      }
+      },
     },
     spec+: {
       tls: [
@@ -148,7 +148,7 @@ local perCloudSvcSpec(cloud) = (
     //   my_cert: kube.CertManager.InCluster.Certificate("my-tls-cert", "my-namespace")
     // to get a Kubernetes TLS secret named "my-tls-cert" in "my-namespace"
     Certificate(name):: kube._Object("cert-manager.io/v1alpha2", "Certificate", name) {
-      assert std.objectHas(self.metadata, "namespace"): "Certificate('%s') must set metadata.namespace" % self.metadata.name,
+      assert std.objectHas(self.metadata, "namespace") : "Certificate('%s') must set metadata.namespace" % self.metadata.name,
     },
 
     InCluster:: {
