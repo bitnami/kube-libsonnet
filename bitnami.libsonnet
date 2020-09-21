@@ -144,9 +144,7 @@ local perCloudSvcSpec(cloud) = (
     // CertManager ClusterIssuer object
     ClusterIssuer(name):: kube._Object("cert-manager.io/v1alpha2", "ClusterIssuer", name),
 
-    // Use as:
-    //   my_cert: kube.CertManager.InCluster.Certificate("my-tls-cert", "my-namespace")
-    // to get a Kubernetes TLS secret named "my-tls-cert" in "my-namespace"
+    // CertManager Certificate object
     Certificate(name):: kube._Object("cert-manager.io/v1alpha2", "Certificate", name) {
       assert std.objectHas(self.metadata, "namespace") : "Certificate('%s') must set metadata.namespace" % self.metadata.name,
     },
@@ -160,6 +158,9 @@ local perCloudSvcSpec(cloud) = (
           selfSigned: {},
         },
       },
+      // Use as:
+      //   my_cert: kube.CertManager.InCluster.Certificate("my-tls-cert", "my-namespace")
+      // to get a Kubernetes TLS secret named "my-tls-cert" in "my-namespace"
       Certificate(name, namespace):: $.CertManager.Certificate(name) {
         metadata+: { namespace: namespace },
         spec+: {
