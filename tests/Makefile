@@ -1,12 +1,14 @@
-# K3S_<KUBE_MAJOR_RELEASE> as a "mapping" from KUBE_MAJOR_RELEASE to k3s tag
-K3S_V1_13=v0.3.0 # no-more to support v1.18 previous Ingress apiVersion deprecation
+# K3S_<KUBE_MAJOR_RELEASE> as a "mapping" from KUBE_MAJOR_RELEASE to k3s tag,
+# from https://hub.docker.com/r/rancher/k3s/tags
+# K3S_V1_13=v0.3.0 # no-more to support v1.18 previous Ingress apiVersion deprecation
 K3S_V1_14=v0.8.0
 K3S_V1_15=v0.9.0
 K3S_V1_16=v1.0.1
+# Since v1.17 k3s image tags follow Kubernetes releases numbering
 K3S_V1_17=v1.17.2-k3s1
 K3S_V1_18=v1.18.2-k3s1
 #
-# Since https://github.com/bitnami-labs/kube-libsonnet/issues/32 we support
+# Since https://github.com/bitnami-labs/kube-libsonnet/issues/32 we only support
 # kubernetes v1.14+ (Ingress apiVersion deprecated in v1.18, available since v1.14).
 #
 # Kubernetes releases we cover with e2e testing:
@@ -17,12 +19,15 @@ SHELL=/bin/bash
 JSONNET_FMT=--indent 2 --string-style d --comment-style s --no-pad-arrays --pad-objects --pretty-field-names
 
 LIB_JSONNET=$(wildcard ../*.libsonnet)
+# jsonnet manifests for kube-validate target, exercising `kubecfg validate ...`
+# against a live Kube API endpoint
 ALL_K8S_VALIDATE_JSONNET=$(wildcard *-validate.pass.jsonnet)
 
-# Filenames provide testing objective
+# Filenames provide expected testing result (pass|fail)
 PASS_JSONNET=$(sort $(wildcard test*pass.jsonnet))
 FAIL_JSONNET=$(sort $(wildcard test*fail.jsonnet))
 UNIT_JSONNET=$(sort $(wildcard unittest*.jsonnet))
+
 ALL_JSONNET=$(sort $(wildcard *.jsonnet))
 
 # Phony %.diff and golden/*.json targets
@@ -34,16 +39,20 @@ PHONY_EVAL_PASS=$(patsubst %.jsonnet,%.eval-pass,$(PASS_JSONNET))
 PHONY_EVAL_FAIL=$(patsubst %.jsonnet,%.eval-fail,$(FAIL_JSONNET))
 
 ## NOTE: below values need to be in-sync with docker-compose.yaml
-##       (not automated to avoid over-engineering parsing/alike)
+##       (not automated to avoid over-engineering the manifests)
 DOCKER_E2E=e2e-test
 TMP_RANCHER=./tmp-rancher
 PROJECT=kubelibsonnet
 
+# All tests, run from docker-compose built docker containers,
+# to (also) avoid the need for local tools install, see ./Dockerfile
 tests: $(patsubst %,e2e-tests-%,$(E2E_K3S_VERSIONS))
 	@echo "SUCCESS: verified Kubernetes versions:"
 	@cat $(TMP_RANCHER)/report.txt
 	@rm -rf ./$(TMP_RANCHER)
 
+# These target is dynamically driven from e2e-test-% above, run as
+# e.g. `e2e-tests-v1.17.2-k3s1`
 e2e-tests-%: req-docker req-docker-compose
 	install -d $(TMP_RANCHER)/root/etc && touch $(TMP_RANCHER)/root/etc/k3s.yaml
 	env USERID=$$(id -u) K3S_VERSION=$(*) docker-compose -p $(PROJECT) up -d
@@ -55,11 +64,13 @@ e2e-tests-%: req-docker req-docker-compose
 	docker-compose -p $(PROJECT) down
 	rm -rf ./$(TMP_RANCHER)/root
 
-local-tests: req-jsonnet unittests lint $(PHONY_EVAL_PASS) $(PHONY_EVAL_FAIL) diff
+# Tests safe to run without a live Kube API endpoint,
+# but still requiring local `jsonnet` install
+local-tests: unittests lint assertion-tests golden-diff
 
 # NB: unittest jsonnet files are also covered by eval-pass and diff targets,
 #     called out here for convenience
-unittests:
+unittests: req-jsonnet
 	jsonnet $(UNIT_JSONNET)
 
 lint: req-jsonnetfmt
@@ -76,7 +87,9 @@ lint: req-jsonnetfmt
 	  exit 1; \
 	fi
 
-diff: diff-help $(PHONY_DIFF)
+assertion-tests: req-jsonnet $(PHONY_EVAL_PASS) $(PHONY_EVAL_FAIL)
+
+golden-diff: diff-help $(PHONY_DIFF)
 
 # Used to initialize docker'ized KubeAPI via k3s
 kube-init: req-kubectl req-kubecfg
