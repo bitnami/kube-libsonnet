@@ -2,6 +2,9 @@ local bitnami = import "../bitnami.libsonnet";
 local kube = import "../kube.libsonnet";
 local utils = import "../utils.libsonnet";
 
+// Just a simple stack to exercise our kube.libsonnet
+// objects, output is saved to tests/golden/test-simple-validate.pass.json
+// to assert textual diff output.
 local stack = {
   namespace:: "foons",
   name:: "foo",
