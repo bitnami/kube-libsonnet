@@ -60,6 +60,7 @@ e2e-tests-%: req-docker req-docker-compose
 	   test $$rc -ne 0 && docker logs k3s-api;\
 	   docker logs $(DOCKER_E2E); \
 	   exit $$rc
+	@# Peek e2e test output for Kubernetes versions tested
 	docker logs $(DOCKER_E2E)| egrep '^Server.Version.+' | sort -u >> $(TMP_RANCHER)/report.txt
 	docker-compose -p $(PROJECT) down
 	rm -rf ./$(TMP_RANCHER)/root
