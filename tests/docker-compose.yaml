@@ -4,6 +4,8 @@ services:
     image: rancher/k3s:${K3S_VERSION}
     command: server --disable-agent
     container_name: k3s-api
+    # Volume mapping to "capture" k3s admin credentials
+    # (aka "admin.conf" KUBECONFIG)
     volumes:
       - ./tmp-rancher/root:/.kube
       - ./tmp-rancher/root:/.rancher

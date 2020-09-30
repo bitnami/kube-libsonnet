@@ -11,7 +11,8 @@ K3S_V1_18=v1.18.2-k3s1
 # Since https://github.com/bitnami-labs/kube-libsonnet/issues/32 we only support
 # kubernetes v1.14+ (Ingress apiVersion deprecated in v1.18, available since v1.14).
 #
-# Kubernetes releases we cover with e2e testing:
+# Kubernetes releases we cover with e2e testing,
+# we'll run `docker-compose` for each to below rancher/k3s versions (tags)
 E2E_K3S_VERSIONS=$(K3S_V1_14) $(K3S_V1_15) $(K3S_V1_16) $(K3S_V1_17) $(K3S_V1_18)
 
 SHELL=/bin/bash
@@ -60,6 +61,7 @@ e2e-tests-%: req-docker req-docker-compose
 	   test $$rc -ne 0 && docker logs k3s-api;\
 	   docker logs $(DOCKER_E2E); \
 	   exit $$rc
+	@# Peek e2e test output for Kubernetes versions tested
 	docker logs $(DOCKER_E2E)| egrep '^Server.Version.+' | sort -u >> $(TMP_RANCHER)/report.txt
 	docker-compose -p $(PROJECT) down
 	rm -rf ./$(TMP_RANCHER)/root

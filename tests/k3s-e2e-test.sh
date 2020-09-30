@@ -6,6 +6,9 @@ echo "INFO: Starting tests: unit, lint ..."
 )
 export KUBECONFIG=/tmp/kubeconfig
 echo "INFO: Waiting for kube-api to be available ..."
+# Busy loop waiting for:
+# - rancher/k3s to have written the k3s.yaml with admin creds
+# - kube API to be ready
 (set +e
 until kubectl get nodes; do
   sleep 1
