@@ -7,13 +7,15 @@ K3S_V1_16=v1.0.1
 # Since v1.17 k3s image tags follow Kubernetes releases numbering
 K3S_V1_17=v1.17.2-k3s1
 K3S_V1_18=v1.18.2-k3s1
+K3S_V1_18=v1.18.2-k3s1
+K3S_V1_19=v1.19.2-k3s1
 #
 # Since https://github.com/bitnami-labs/kube-libsonnet/issues/32 we only support
 # kubernetes v1.14+ (Ingress apiVersion deprecated in v1.18, available since v1.14).
 #
 # Kubernetes releases we cover with e2e testing,
 # we'll run `docker-compose` for each to below rancher/k3s versions (tags)
-E2E_K3S_VERSIONS=$(K3S_V1_14) $(K3S_V1_15) $(K3S_V1_16) $(K3S_V1_17) $(K3S_V1_18)
+E2E_K3S_VERSIONS=$(K3S_V1_14) $(K3S_V1_15) $(K3S_V1_16) $(K3S_V1_17) $(K3S_V1_18) $(K3S_V1_19)
 
 SHELL=/bin/bash
 # Rather arbitrary Bitnami style choice
