@@ -120,7 +120,7 @@ local perCloudSvcSpec(cloud) = (
   },
   // use a Docker config to pull from DockerHub
   ServiceAccount(name): kube.ServiceAccount(name) {
-    imagePullSecrets: { name: "dockerhub-dockerconfig" },
+    imagePullSecrets: [{ name: "dockerhub-dockerconfig" }],
   },
 
   CertManager:: {
