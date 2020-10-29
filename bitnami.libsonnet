@@ -118,7 +118,11 @@ local perCloudSvcSpec(cloud) = (
       ],
     },
   },
-
+  // The secret will be only available on those clusters who make use of
+  // ClusterSecrets, which replicates the source secret to desired namespaces in
+  // the cluster. It's the case for g.dev
+  // AWS clusters are KOPS managed clusters doesn't need any imagePullSecret definition since
+  // use a Docker config in the nodes, so the pull is authenticated out of K8s
   ServiceAccount(name): kube.ServiceAccount(name) {
     imagePullSecrets: { name: "dockerhub-dockerconfig" },
   },
