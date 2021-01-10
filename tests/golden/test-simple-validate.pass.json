@@ -523,6 +523,48 @@
          }
       },
       {
+         "apiVersion": "networking.k8s.io/v1beta1",
+         "kind": "Ingress",
+         "metadata": {
+            "annotations": { },
+            "labels": {
+               "name": "foo-pathless-ingress"
+            },
+            "name": "foo-pathless-ingress",
+            "namespace": "foons"
+         },
+         "spec": {
+            "rules": [
+               {
+                  "host": "a.example.com",
+                  "http": {
+                     "paths": [
+                        {
+                           "backend": {
+                              "serviceName": "service-a",
+                              "servicePort": "web"
+                           }
+                        }
+                     ]
+                  }
+               },
+               {
+                  "host": "b.example.com",
+                  "http": {
+                     "paths": [
+                        {
+                           "backend": {
+                              "serviceName": "service-2",
+                              "servicePort": "web"
+                           }
+                        }
+                     ]
+                  }
+               }
+            ]
+         }
+      },
+      {
          "apiVersion": "v1",
          "kind": "Pod",
          "metadata": {
