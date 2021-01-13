@@ -139,4 +139,4 @@ req-%:
 
 gen-golden: $(PHONY_GOLDEN)
 
-.PHONY: unittests lint eval-pass eval-fail validate diff %.eval-pass %.evail-fail %.diff golden/%.json diff-help fix-lint gen-golden
+.PHONY: unittests lint eval-pass eval-fail validate golden-diff %.eval-pass %.evail-fail %.diff golden/%.json diff-help fix-lint gen-golden
