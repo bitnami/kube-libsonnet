@@ -123,7 +123,7 @@ golden/%.json: %.jsonnet
 	jsonnet $(<) > $(@)
 
 diff-help:
-	@echo "NOTE: if the 'diff' target fails, review output and run:"
+	@echo "NOTE: if the 'golden-diff' target fails, review output and run:"
 	@echo "      $(MAKE) gen-golden golden-diff"
 	@echo
 
