@@ -124,7 +124,7 @@ golden/%.json: %.jsonnet
 
 diff-help:
 	@echo "NOTE: if the 'diff' target fails, review output and run:"
-	@echo "      $(MAKE) gen-golden diff"
+	@echo "      $(MAKE) gen-golden golden-diff"
 	@echo
 
 fix-lint: req-jsonnetfmt
