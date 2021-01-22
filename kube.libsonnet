@@ -585,7 +585,7 @@
       p.path
       for r in self.spec.rules
       for p in r.http.paths
-      if !std.startsWith(p.path, "/")
+      if std.objectHas(p, "path") && !std.startsWith(p.path, "/")
     ],
     assert (!$._assert) || std.length(rel_paths) == 0 : "paths must be absolute: " + rel_paths,
   },
