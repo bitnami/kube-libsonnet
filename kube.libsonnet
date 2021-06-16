@@ -61,7 +61,7 @@
   // resource contructors will use kinds/versions/fields compatible at least with version:
   minKubeVersion: {
     major: 1,
-    minor: 14,
+    minor: 19,
     version: "%s.%s" % [self.major, self.minor],
   },
 
@@ -169,8 +169,13 @@
     ],
     // Useful in Ingress rules
     name_port:: {
-      serviceName: service.metadata.name,
-      servicePort: service.spec.ports[0].port,
+      service+: {
+        name: service.metadata.name,
+        port+: {
+          number: service.spec.ports[0].port,
+          [if std.objectHas(service.spec.ports[0], "name") then "name" else null]: service.spec.ports[0].name,
+        },
+      },
     },
 
     spec: {
@@ -578,7 +583,7 @@
     },
   },
 
-  Ingress(name): $._Object("networking.k8s.io/v1beta1", "Ingress", name) {
+  Ingress(name): $._Object("networking.k8s.io/v1", "Ingress", name) {
     spec: {},
 
     local rel_paths = [
@@ -597,7 +602,7 @@
 
   CustomResourceDefinition(group, version, kind): {
     local this = self,
-    apiVersion: "apiextensions.k8s.io/v1beta1",
+    apiVersion: "apiextensions.k8s.io/v1",
     kind: "CustomResourceDefinition",
     metadata+: {
       name: this.spec.names.plural + "." + this.spec.group,
@@ -605,7 +610,24 @@
     spec: {
       scope: "Namespaced",
       group: group,
-      version: version,
+      versions_:: {
+        [version]: {
+          name: version,
+          served: true,
+          storage: true,
+          schema: {
+            openAPIV3Schema: {
+              type: "object",
+              properties: {
+                spec: {
+                  type: "object",
+                },
+              },
+            },
+          },
+        },
+      },
+      versions: $.mapToNamedList(self.versions_),
       names: {
         kind: kind,
         singular: $.toLower(self.kind),
@@ -727,7 +749,7 @@
 
     target:: error "target required",
 
-    spec: {
+    spec+: {
       targetRef: $.CrossVersionObjectReference(vpa.target),
 
       updatePolicy: {

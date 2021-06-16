@@ -52,7 +52,13 @@ local perCloudSvcSpec(cloud) = (
     host:: error "host required",
     target_svc:: error "target_svc required",
     // Default to single-service - override if you want something else.
-    paths:: [{ path: "/", backend: ing.target_svc.name_port }],
+    paths:: [
+      {
+        path: "/",
+        backend: ing.target_svc.name_port,
+        pathType: "ImplementationSpecific",
+      },
+    ],
     secretName:: "%s-cert" % [ing.metadata.name],
 
     // cert_provider can either be:

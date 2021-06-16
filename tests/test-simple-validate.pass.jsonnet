@@ -69,9 +69,14 @@ local stack = {
           host: "a.example.com",
           http: {
             paths: [{
+              pathType: "ImplementationSpecific",
               backend: {
-                serviceName: "service-a",
-                servicePort: "web",
+                service: {
+                  name: "service-a",
+                  port: {
+                    name: "web",
+                  },
+                },
               },
             }],
           },
@@ -80,9 +85,14 @@ local stack = {
           host: "b.example.com",
           http: {
             paths: [{
+              pathType: "ImplementationSpecific",
               backend: {
-                serviceName: "service-2",
-                servicePort: "web",
+                service: {
+                  name: "service-2",
+                  port: {
+                    name: "web",
+                  },
+                },
               },
             }],
           },

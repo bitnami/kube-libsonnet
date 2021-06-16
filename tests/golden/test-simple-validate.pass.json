@@ -329,7 +329,7 @@
          }
       },
       {
-         "apiVersion": "networking.k8s.io/v1beta1",
+         "apiVersion": "networking.k8s.io/v1",
          "kind": "Ingress",
          "metadata": {
             "annotations": {
@@ -349,10 +349,16 @@
                      "paths": [
                         {
                            "backend": {
-                              "serviceName": "foo-svc",
-                              "servicePort": 80
+                              "service": {
+                                 "name": "foo-svc",
+                                 "port": {
+                                    "name": "http",
+                                    "number": 80
+                                 }
+                              }
                            },
-                           "path": "/"
+                           "path": "/",
+                           "pathType": "ImplementationSpecific"
                         }
                      ]
                   }
@@ -523,7 +529,7 @@
          }
       },
       {
-         "apiVersion": "networking.k8s.io/v1beta1",
+         "apiVersion": "networking.k8s.io/v1",
          "kind": "Ingress",
          "metadata": {
             "annotations": { },
@@ -541,9 +547,14 @@
                      "paths": [
                         {
                            "backend": {
-                              "serviceName": "service-a",
-                              "servicePort": "web"
-                           }
+                              "service": {
+                                 "name": "service-a",
+                                 "port": {
+                                    "name": "web"
+                                 }
+                              }
+                           },
+                           "pathType": "ImplementationSpecific"
                         }
                      ]
                   }
@@ -554,9 +565,14 @@
                      "paths": [
                         {
                            "backend": {
-                              "serviceName": "service-2",
-                              "servicePort": "web"
-                           }
+                              "service": {
+                                 "name": "service-2",
+                                 "port": {
+                                    "name": "web"
+                                 }
+                              }
+                           },
+                           "pathType": "ImplementationSpecific"
                         }
                      ]
                   }

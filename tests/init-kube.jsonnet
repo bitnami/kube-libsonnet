@@ -3,11 +3,15 @@ local kube = import "../kube.libsonnet";
 local crds = {
   // A simplified VPA CRD from https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler
   vpa_crd: kube.CustomResourceDefinition("autoscaling.k8s.io", "v1beta1", "VerticalPodAutoscaler") {
+    metadata+: {
+      annotations: {
+        "api-approved.kubernetes.io": "https://github.com/kubernetes/kubernetes/pull/78458",
+      },
+    },
     spec+: {
-      versions+: [
-        { name: "v1beta1", served: true, storage: false },
-        { name: "v1beta2", served: true, storage: true },
-      ],
+      versions_+: {
+        v1beta2: self.v1beta1 { name: "v1beta2", storage: false },
+      },
     },
   },
   // Simplified cert-manager CRD from https://github.com/jetstack/cert-manager/blob/master/deploy/crds/crd-certificates.yaml,
