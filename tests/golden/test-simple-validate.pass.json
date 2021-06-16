@@ -352,8 +352,7 @@
                               "service": {
                                  "name": "foo-svc",
                                  "port": {
-                                    "name": "http",
-                                    "number": 80
+                                    "name": "http"
                                  }
                               }
                            },

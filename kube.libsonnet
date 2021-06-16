@@ -168,14 +168,22 @@
       self.metadata.name,
     ],
     // Useful in Ingress rules
+    // This has been adapted for Ingress with apiVersion: networking.k8s.io/v1
     name_port:: {
+      local this = self,
+      default_port:: service.spec.ports[0],
+      port_spec:: if std.objectHas(this.default_port, "name") then { name: this.default_port.name } else { number: this.default_port.port },
+
       service+: {
         name: service.metadata.name,
-        port+: {
-          number: service.spec.ports[0].port,
-          [if std.objectHas(service.spec.ports[0], "name") then "name" else null]: service.spec.ports[0].name,
-        },
+        port+: this.port_spec,
       },
+
+      assert (!$._assert) || $.boolXor(
+        std.objectHas(this.port_spec, "name"),
+        std.objectHas(this.port_spec, "number")
+      ) : "Service '%s' name_port: `name` and `number` are mutually exclusive for Ingress spec" % name,
+
     },
 
     spec: {
