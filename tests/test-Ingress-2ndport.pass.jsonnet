@@ -39,5 +39,5 @@ local stack = {
 };
 
 stack {
-  assert (stack.ingress.spec.rules[0].http.paths[0].backend.service.port.name == "metrics"),
+  assert (stack.ingress.spec.rules[0].http.paths[0].backend.service.port == { name: "metrics" }),
 }
