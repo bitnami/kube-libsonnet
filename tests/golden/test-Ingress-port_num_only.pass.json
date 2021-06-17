@@ -5,9 +5,9 @@
       "metadata": {
          "annotations": { },
          "labels": {
-            "name": "test-Ingress-fail-deploy"
+            "name": "test-Ingress-pass-deploy"
          },
-         "name": "test-Ingress-fail-deploy"
+         "name": "test-Ingress-pass-deploy"
       },
       "spec": {
          "minReadySeconds": 30,
@@ -15,7 +15,7 @@
          "revisionHistoryLimit": 10,
          "selector": {
             "matchLabels": {
-               "name": "test-Ingress-fail-deploy"
+               "name": "test-Ingress-pass-deploy"
             }
          },
          "strategy": {
@@ -29,7 +29,7 @@
             "metadata": {
                "annotations": { },
                "labels": {
-                  "name": "test-Ingress-fail-deploy"
+                  "name": "test-Ingress-pass-deploy"
                }
             },
             "spec": {
@@ -39,7 +39,7 @@
                      "env": [ ],
                      "image": "nginx:1.12",
                      "imagePullPolicy": "IfNotPresent",
-                     "name": "test-Ingress-fail",
+                     "name": "test-Ingress-pass",
                      "ports": [
                         {
                            "containerPort": 80,
@@ -71,9 +71,9 @@
             "cert-manager.io/cluster-issuer": "letsencrypt-prod-dns"
          },
          "labels": {
-            "name": "test-Ingress-fail-ingress"
+            "name": "test-Ingress-pass-ingress"
          },
-         "name": "test-Ingress-fail-ingress"
+         "name": "test-Ingress-pass-ingress"
       },
       "spec": {
          "rules": [
@@ -84,7 +84,7 @@
                      {
                         "backend": {
                            "service": {
-                              "name": "test-Ingress-fail-svc",
+                              "name": "test-Ingress-pass-svc",
                               "port": {
                                  "number": 4242
                               }
@@ -102,7 +102,7 @@
                "hosts": [
                   "foo.g.dev.bitnami.net"
                ],
-               "secretName": "test-Ingress-fail-ingress-cert"
+               "secretName": "test-Ingress-pass-ingress-cert"
             }
          ]
       }
@@ -113,9 +113,9 @@
       "metadata": {
          "annotations": { },
          "labels": {
-            "name": "test-Ingress-fail-pod"
+            "name": "test-Ingress-pass-pod"
          },
-         "name": "test-Ingress-fail-pod"
+         "name": "test-Ingress-pass-pod"
       },
       "spec": {
          "containers": [
@@ -124,7 +124,7 @@
                "env": [ ],
                "image": "nginx:1.12",
                "imagePullPolicy": "IfNotPresent",
-               "name": "test-Ingress-fail",
+               "name": "test-Ingress-pass",
                "ports": [
                   {
                      "containerPort": 80,
@@ -152,9 +152,9 @@
       "metadata": {
          "annotations": { },
          "labels": {
-            "name": "test-Ingress-fail-svc"
+            "name": "test-Ingress-pass-svc"
          },
-         "name": "test-Ingress-fail-svc"
+         "name": "test-Ingress-pass-svc"
       },
       "spec": {
          "ports": [
@@ -165,7 +165,7 @@
             }
          ],
          "selector": {
-            "name": "test-Ingress-fail-deploy"
+            "name": "test-Ingress-pass-deploy"
          },
          "type": "ClusterIP"
       }
