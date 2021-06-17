@@ -2,7 +2,7 @@ local bitnami = import "../bitnami.libsonnet";
 local kube = import "../kube.libsonnet";
 
 local stack = {
-  name:: "test-Ingress-fail",
+  name:: "test-Ingress-pass",
   pod: kube.Pod($.name + "-pod") {
     spec+: {
       containers_+: {
@@ -29,6 +29,7 @@ local stack = {
     local this = self,
     target_pod: $.deploy.spec.template,
     name_port+:: {
+      // Override default_port to 2nd port instead of 1st (default),
       default_port:: this.target_pod.spec.containers[0].ports[1],
     },
   },
@@ -39,5 +40,6 @@ local stack = {
 };
 
 stack {
+  // Assert we got 2nd port dubbed "metrics" for Ingress
   assert (stack.ingress.spec.rules[0].http.paths[0].backend.service.port == { name: "metrics" }),
 }

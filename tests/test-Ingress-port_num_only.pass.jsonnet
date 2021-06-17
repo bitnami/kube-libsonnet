@@ -2,7 +2,7 @@ local bitnami = import "../bitnami.libsonnet";
 local kube = import "../kube.libsonnet";
 
 local stack = {
-  name:: "test-Ingress-fail",
+  name:: "test-Ingress-pass",
   pod: kube.Pod($.name + "-pod") {
     spec+: {
       containers_+: {
@@ -29,6 +29,7 @@ local stack = {
     local this = self,
     target_pod: $.deploy.spec.template,
     name_port+:: {
+      // Force port to _only_ be below number (note no `+::` construct)
       port_spec:: { number: 4242 },
     },
   },
@@ -39,5 +40,6 @@ local stack = {
 };
 
 stack {
+  // Assert we got expected port number for Ingress
   assert (stack.ingress.spec.rules[0].http.paths[0].backend.service.port == { number: 4242 }),
 }
