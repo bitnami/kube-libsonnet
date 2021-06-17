@@ -10,7 +10,7 @@ local crds = {
     },
     spec+: {
       versions_+: {
-        v1beta2: self.v1beta1 { name: "v1beta2", storage: false },
+        v1beta2: self.default_spec { storage: false },
       },
     },
   },

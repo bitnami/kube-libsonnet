@@ -619,8 +619,9 @@
       scope: "Namespaced",
       group: group,
       versions_:: {
-        [version]: {
-          name: version,
+        // Create an opinionated default_spec for the version, easy to override by the user,
+        // specially if they had several versions to derived from the same "skeleton".
+        default_spec:: {
           served: true,
           storage: true,
           schema: {
@@ -634,6 +635,7 @@
             },
           },
         },
+        [version]: self.default_spec,
       },
       versions: $.mapToNamedList(self.versions_),
       names: {
