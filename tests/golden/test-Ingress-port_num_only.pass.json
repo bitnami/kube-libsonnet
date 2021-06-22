@@ -1,0 +1,173 @@
+{
+   "deploy": {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+         "annotations": { },
+         "labels": {
+            "name": "test-Ingress-pass-deploy"
+         },
+         "name": "test-Ingress-pass-deploy"
+      },
+      "spec": {
+         "minReadySeconds": 30,
+         "replicas": 1,
+         "revisionHistoryLimit": 10,
+         "selector": {
+            "matchLabels": {
+               "name": "test-Ingress-pass-deploy"
+            }
+         },
+         "strategy": {
+            "rollingUpdate": {
+               "maxSurge": "25%",
+               "maxUnavailable": "25%"
+            },
+            "type": "RollingUpdate"
+         },
+         "template": {
+            "metadata": {
+               "annotations": { },
+               "labels": {
+                  "name": "test-Ingress-pass-deploy"
+               }
+            },
+            "spec": {
+               "containers": [
+                  {
+                     "args": [ ],
+                     "env": [ ],
+                     "image": "nginx:1.12",
+                     "imagePullPolicy": "IfNotPresent",
+                     "name": "test-Ingress-pass",
+                     "ports": [
+                        {
+                           "containerPort": 80,
+                           "name": "http"
+                        },
+                        {
+                           "containerPort": 9099,
+                           "name": "metrics"
+                        }
+                     ],
+                     "stdin": false,
+                     "tty": false,
+                     "volumeMounts": [ ]
+                  }
+               ],
+               "imagePullSecrets": [ ],
+               "initContainers": [ ],
+               "terminationGracePeriodSeconds": 30,
+               "volumes": [ ]
+            }
+         }
+      }
+   },
+   "ingress": {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "Ingress",
+      "metadata": {
+         "annotations": {
+            "cert-manager.io/cluster-issuer": "letsencrypt-prod-dns"
+         },
+         "labels": {
+            "name": "test-Ingress-pass-ingress"
+         },
+         "name": "test-Ingress-pass-ingress"
+      },
+      "spec": {
+         "rules": [
+            {
+               "host": "foo.g.dev.bitnami.net",
+               "http": {
+                  "paths": [
+                     {
+                        "backend": {
+                           "service": {
+                              "name": "test-Ingress-pass-svc",
+                              "port": {
+                                 "number": 4242
+                              }
+                           }
+                        },
+                        "path": "/",
+                        "pathType": "ImplementationSpecific"
+                     }
+                  ]
+               }
+            }
+         ],
+         "tls": [
+            {
+               "hosts": [
+                  "foo.g.dev.bitnami.net"
+               ],
+               "secretName": "test-Ingress-pass-ingress-cert"
+            }
+         ]
+      }
+   },
+   "pod": {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+         "annotations": { },
+         "labels": {
+            "name": "test-Ingress-pass-pod"
+         },
+         "name": "test-Ingress-pass-pod"
+      },
+      "spec": {
+         "containers": [
+            {
+               "args": [ ],
+               "env": [ ],
+               "image": "nginx:1.12",
+               "imagePullPolicy": "IfNotPresent",
+               "name": "test-Ingress-pass",
+               "ports": [
+                  {
+                     "containerPort": 80,
+                     "name": "http"
+                  },
+                  {
+                     "containerPort": 9099,
+                     "name": "metrics"
+                  }
+               ],
+               "stdin": false,
+               "tty": false,
+               "volumeMounts": [ ]
+            }
+         ],
+         "imagePullSecrets": [ ],
+         "initContainers": [ ],
+         "terminationGracePeriodSeconds": 30,
+         "volumes": [ ]
+      }
+   },
+   "service": {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+         "annotations": { },
+         "labels": {
+            "name": "test-Ingress-pass-svc"
+         },
+         "name": "test-Ingress-pass-svc"
+      },
+      "spec": {
+         "ports": [
+            {
+               "name": "http",
+               "port": 80,
+               "targetPort": 80
+            }
+         ],
+         "selector": {
+            "name": "test-Ingress-pass-deploy"
+         },
+         "type": "ClusterIP"
+      }
+   }
+}

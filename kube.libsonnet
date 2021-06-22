@@ -61,7 +61,7 @@
   // resource contructors will use kinds/versions/fields compatible at least with version:
   minKubeVersion: {
     major: 1,
-    minor: 14,
+    minor: 19,
     version: "%s.%s" % [self.major, self.minor],
   },
 
@@ -168,9 +168,22 @@
       self.metadata.name,
     ],
     // Useful in Ingress rules
+    // This has been adapted for Ingress with apiVersion: networking.k8s.io/v1
     name_port:: {
-      serviceName: service.metadata.name,
-      servicePort: service.spec.ports[0].port,
+      local this = self,
+      default_port:: service.spec.ports[0],
+      port_spec:: if std.objectHas(this.default_port, "name") then { name: this.default_port.name } else { number: this.default_port.port },
+
+      service+: {
+        name: service.metadata.name,
+        port+: this.port_spec,
+      },
+
+      assert (!$._assert) || $.boolXor(
+        std.objectHas(this.port_spec, "name"),
+        std.objectHas(this.port_spec, "number")
+      ) : "Service '%s' name_port: `name` and `number` are mutually exclusive for Ingress spec" % name,
+
     },
 
     spec: {
@@ -578,7 +591,7 @@
     },
   },
 
-  Ingress(name): $._Object("networking.k8s.io/v1beta1", "Ingress", name) {
+  Ingress(name): $._Object("networking.k8s.io/v1", "Ingress", name) {
     spec: {},
 
     local rel_paths = [
@@ -597,7 +610,7 @@
 
   CustomResourceDefinition(group, version, kind): {
     local this = self,
-    apiVersion: "apiextensions.k8s.io/v1beta1",
+    apiVersion: "apiextensions.k8s.io/v1",
     kind: "CustomResourceDefinition",
     metadata+: {
       name: this.spec.names.plural + "." + this.spec.group,
@@ -605,7 +618,26 @@
     spec: {
       scope: "Namespaced",
       group: group,
-      version: version,
+      versions_:: {
+        // Create an opinionated default_spec for the version, easy to override by the user,
+        // specially if they had several versions to derived from the same "skeleton".
+        default_spec:: {
+          served: true,
+          storage: true,
+          schema: {
+            openAPIV3Schema: {
+              type: "object",
+              properties: {
+                spec: {
+                  type: "object",
+                },
+              },
+            },
+          },
+        },
+        [version]: self.default_spec,
+      },
+      versions: $.mapToNamedList(self.versions_),
       names: {
         kind: kind,
         singular: $.toLower(self.kind),
@@ -727,7 +759,7 @@
 
     target:: error "target required",
 
-    spec: {
+    spec+: {
       targetRef: $.CrossVersionObjectReference(vpa.target),
 
       updatePolicy: {

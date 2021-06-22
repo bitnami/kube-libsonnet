@@ -16,7 +16,7 @@ K3S_V1_21=v1.21.1-k3s1
 #
 # Kubernetes releases we cover with e2e testing,
 # we'll run `docker-compose` for each to below rancher/k3s versions (tags)
-E2E_K3S_VERSIONS=$(K3S_V1_14) $(K3S_V1_15) $(K3S_V1_16) $(K3S_V1_17) $(K3S_V1_18) $(K3S_V1_19) $(K3S_V1_20) $(K3S_V1_21)
+E2E_K3S_VERSIONS=$(K3S_V1_19) $(K3S_V1_20) $(K3S_V1_21)
 
 SHELL=/bin/bash
 # Rather arbitrary Bitnami style choice
