@@ -60,6 +60,47 @@ local stack = {
     target_svc: $.service,
   },
 
+  // An ingress with multiple hosts but none of the hosts specifies a path (#54).
+  pathlessIngress: kube.Ingress($.name + "-pathless-ingress") {
+    metadata+: { namespace: $.namespace },
+    spec+: {
+      rules+: [
+        {
+          host: "a.example.com",
+          http: {
+            paths: [{
+              pathType: "ImplementationSpecific",
+              backend: {
+                service: {
+                  name: "service-a",
+                  port: {
+                    name: "web",
+                  },
+                },
+              },
+            }],
+          },
+        },
+        {
+          host: "b.example.com",
+          http: {
+            paths: [{
+              pathType: "ImplementationSpecific",
+              backend: {
+                service: {
+                  name: "service-2",
+                  port: {
+                    name: "web",
+                  },
+                },
+              },
+            }],
+          },
+        },
+      ],
+    },
+  },
+
   // NB: just a simple example pod
   pod: kube.Pod($.name + "-pod") {
     metadata+: { namespace: $.namespace },
