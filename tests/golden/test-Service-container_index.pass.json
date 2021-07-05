@@ -1,0 +1,169 @@
+{
+   "deploy": {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+         "annotations": { },
+         "labels": {
+            "name": "test-Service-pass-deploy"
+         },
+         "name": "test-Service-pass-deploy"
+      },
+      "spec": {
+         "minReadySeconds": 30,
+         "replicas": 1,
+         "revisionHistoryLimit": 10,
+         "selector": {
+            "matchLabels": {
+               "name": "test-Service-pass-deploy"
+            }
+         },
+         "strategy": {
+            "rollingUpdate": {
+               "maxSurge": "25%",
+               "maxUnavailable": "25%"
+            },
+            "type": "RollingUpdate"
+         },
+         "template": {
+            "metadata": {
+               "annotations": { },
+               "labels": {
+                  "name": "test-Service-pass-deploy"
+               }
+            },
+            "spec": {
+               "containers": [
+                  {
+                     "args": [ ],
+                     "env": [ ],
+                     "image": "nginx:1.12",
+                     "imagePullPolicy": "IfNotPresent",
+                     "name": "test-Service-pass-default",
+                     "ports": [
+                        {
+                           "containerPort": 80,
+                           "name": "http"
+                        },
+                        {
+                           "containerPort": 9099,
+                           "name": "metrics"
+                        }
+                     ],
+                     "stdin": false,
+                     "tty": false,
+                     "volumeMounts": [ ]
+                  },
+                  {
+                     "args": [ ],
+                     "env": [ ],
+                     "image": "nginx:1.12",
+                     "imagePullPolicy": "IfNotPresent",
+                     "name": "test-Service-pass-sidecar",
+                     "ports": [
+                        {
+                           "containerPort": 80,
+                           "name": "http-sidecar"
+                        },
+                        {
+                           "containerPort": 9099,
+                           "name": "metrics"
+                        }
+                     ],
+                     "stdin": false,
+                     "tty": false,
+                     "volumeMounts": [ ]
+                  }
+               ],
+               "imagePullSecrets": [ ],
+               "initContainers": [ ],
+               "terminationGracePeriodSeconds": 30,
+               "volumes": [ ]
+            }
+         }
+      }
+   },
+   "pod": {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+         "annotations": { },
+         "labels": {
+            "name": "test-Service-pass-pod"
+         },
+         "name": "test-Service-pass-pod"
+      },
+      "spec": {
+         "containers": [
+            {
+               "args": [ ],
+               "env": [ ],
+               "image": "nginx:1.12",
+               "imagePullPolicy": "IfNotPresent",
+               "name": "test-Service-pass-default",
+               "ports": [
+                  {
+                     "containerPort": 80,
+                     "name": "http"
+                  },
+                  {
+                     "containerPort": 9099,
+                     "name": "metrics"
+                  }
+               ],
+               "stdin": false,
+               "tty": false,
+               "volumeMounts": [ ]
+            },
+            {
+               "args": [ ],
+               "env": [ ],
+               "image": "nginx:1.12",
+               "imagePullPolicy": "IfNotPresent",
+               "name": "test-Service-pass-sidecar",
+               "ports": [
+                  {
+                     "containerPort": 80,
+                     "name": "http-sidecar"
+                  },
+                  {
+                     "containerPort": 9099,
+                     "name": "metrics"
+                  }
+               ],
+               "stdin": false,
+               "tty": false,
+               "volumeMounts": [ ]
+            }
+         ],
+         "imagePullSecrets": [ ],
+         "initContainers": [ ],
+         "terminationGracePeriodSeconds": 30,
+         "volumes": [ ]
+      }
+   },
+   "service": {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+         "annotations": { },
+         "labels": {
+            "name": "test-Service-pass-svc"
+         },
+         "name": "test-Service-pass-svc"
+      },
+      "spec": {
+         "ports": [
+            {
+               "name": "http-sidecar",
+               "port": 80,
+               "targetPort": 80
+            }
+         ],
+         "selector": {
+            "name": "test-Service-pass-deploy"
+         },
+         "type": "ClusterIP"
+      }
+   }
+}
