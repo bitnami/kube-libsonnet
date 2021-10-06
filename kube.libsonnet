@@ -208,7 +208,7 @@
     persistentVolumeClaim: { claimName: pvc.metadata.name },
   },
 
-  StorageClass(name): $._Object("storage.k8s.io/v1beta1", "StorageClass", name) {
+  StorageClass(name): $._Object("storage.k8s.io/v1", "StorageClass", name) {
     provisioner: error "provisioner required",
   },
 
