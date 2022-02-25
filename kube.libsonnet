@@ -218,12 +218,6 @@
     storageClass:: null,
     storage:: error "storage required",
 
-    metadata+: if pvc.storageClass != null then {
-      annotations+: {
-        "volume.beta.kubernetes.io/storage-class": pvc.storageClass,
-      },
-    } else {},
-
     spec: {
       resources: {
         requests: {
