@@ -157,7 +157,8 @@
     local service = self,
 
     target_pod:: error "service target_pod required",
-    port:: self.target_pod.spec.containers[0].ports[0].containerPort,
+    container_index:: 0,
+    port:: self.target_pod.spec.containers[service.container_index].ports[0].containerPort,
 
     // Helpers that format host:port in various ways
     host:: "%s.%s.svc" % [self.metadata.name, self.metadata.namespace],
@@ -191,8 +192,8 @@
       ports: [
         {
           port: service.port,
-          name: service.target_pod.spec.containers[0].ports[0].name,
-          targetPort: service.target_pod.spec.containers[0].ports[0].containerPort,
+          name: service.target_pod.spec.containers[service.container_index].ports[0].name,
+          targetPort: service.target_pod.spec.containers[service.container_index].ports[0].containerPort,
         },
       ],
       type: "ClusterIP",
