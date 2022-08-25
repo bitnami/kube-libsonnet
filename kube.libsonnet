@@ -452,8 +452,6 @@
 
       // NB: Regular k8s default is to keep all revisions
       revisionHistoryLimit: 10,
-
-      replicas: 1,
     },
   },
 
