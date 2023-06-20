@@ -528,7 +528,7 @@
     },
   },
 
-  CronJob(name): $._Object("batch/v1beta1", "CronJob", name) {
+  CronJob(name): $._Object("batch/v1", "CronJob", name) {
     local cronjob = self,
 
     spec: {
