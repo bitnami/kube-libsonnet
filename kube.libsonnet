@@ -265,7 +265,7 @@
     assert (!$._assert) || (!self.tty || self.stdin) : "tty=true requires stdin=true",
   },
 
-  PodDisruptionBudget(name): $._Object("policy/v1beta1", "PodDisruptionBudget", name) {
+  PodDisruptionBudget(name): $._Object("policy/v1", "PodDisruptionBudget", name) {
     local this = self,
     target_pod:: error "target_pod required",
     spec: {
@@ -528,7 +528,7 @@
     },
   },
 
-  CronJob(name): $._Object("batch/v1beta1", "CronJob", name) {
+  CronJob(name): $._Object("batch/v1", "CronJob", name) {
     local cronjob = self,
 
     spec: {
