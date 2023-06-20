@@ -512,7 +512,6 @@
       ],
 
       replicas: 1,
-      assert (!$._assert) || self.replicas >= 1,
     },
   },
 
