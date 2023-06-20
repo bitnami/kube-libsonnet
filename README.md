@@ -1,5 +1,7 @@
 ## WARNING: This repository is no longer actively maintained by Bitnami/VMware.
-We have made the difficult decision to stop driving this project and therefore we will no longer actively respond to issues or pull requests. If you would like to take over maintaining this project independently from Bitnami/VMware, please let us know so we can add a link to your forked project here.
+We have made the difficult decision to stop driving this project and therefore we will no longer actively respond to issues or pull requests.
+
+There is a new initiative to continue maintaining this project outside of Bitnami/VMware at https://github.com/kube-libsonnet/kube-libsonnet
 
 [![Build Status](https://travis-ci.org/bitnami-labs/kube-libsonnet.svg?branch=master)](https://travis-ci.org/bitnami-labs/kube-libsonnet)
 # kube-libsonnet
