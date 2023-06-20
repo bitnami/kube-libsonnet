@@ -143,8 +143,7 @@
     items: $.objectValues(self.items_),
   },
 
-  Namespace(name): $._Object("v1", "Namespace", name) {
-  },
+  Namespace(name): $._Object("v1", "Namespace", name),
 
   Endpoints(name): $._Object("v1", "Endpoints", name) {
     Ip(addr):: { ip: addr },
@@ -640,8 +639,7 @@
     },
   },
 
-  ServiceAccount(name): $._Object("v1", "ServiceAccount", name) {
-  },
+  ServiceAccount(name): $._Object("v1", "ServiceAccount", name),
 
   Role(name): $._Object("rbac.authorization.k8s.io/v1", "Role", name) {
     rules: [],
