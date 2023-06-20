@@ -461,7 +461,7 @@
     name: target.metadata.name,
   },
 
-  HorizontalPodAutoscaler(name): $._Object("autoscaling/v1", "HorizontalPodAutoscaler", name) {
+  HorizontalPodAutoscaler(name): $._Object("autoscaling/v2", "HorizontalPodAutoscaler", name) {
     local hpa = self,
 
     target:: error "target required",
